@@ -58,6 +58,9 @@ NetworkNodeVisualizerBase::NetworkNodeVisualization *NetworkNodeVisualizerBase::
 
 void NetworkNodeVisualizerBase::receiveSignal(cComponent *source, simsignal_t signal, cObject *object, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == POST_MODEL_CHANGE) {

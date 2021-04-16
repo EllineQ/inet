@@ -281,6 +281,9 @@ void PathVisualizerBase::processPathEnd(cModule *networkNode, const char *label,
 
 void PathVisualizerBase::receiveSignal(cComponent *source, simsignal_t signal, cObject *object, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == startPathSignal) {

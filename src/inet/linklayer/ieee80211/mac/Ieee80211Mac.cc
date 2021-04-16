@@ -313,6 +313,9 @@ void Ieee80211Mac::decapsulate(Packet *packet)
 
 void Ieee80211Mac::receiveSignal(cComponent *source, simsignal_t signalID, intval_t value, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signalID));
 
     if (signalID == IRadio::receptionStateChangedSignal) {

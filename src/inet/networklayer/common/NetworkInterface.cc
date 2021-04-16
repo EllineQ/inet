@@ -221,6 +221,9 @@ void NetworkInterface::handleParameterChange(const char *name)
 
 void NetworkInterface::receiveSignal(cComponent *source, simsignal_t signal, cObject *obj, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == POST_MODEL_CHANGE) {

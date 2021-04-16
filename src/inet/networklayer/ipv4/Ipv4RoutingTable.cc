@@ -162,6 +162,9 @@ void Ipv4RoutingTable::receiveSignal(cComponent *source, simsignal_t signalID, c
     if (getSimulation()->getContextType() == CTX_INITIALIZE)
         return; // ignore notifications during initialize
 
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signalID));
 
     printSignalBanner(signalID, obj, details);

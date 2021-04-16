@@ -172,6 +172,9 @@ void MacProtocolBase::handleCrashOperation(LifecycleOperation *operation)
 
 void MacProtocolBase::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signalID));
 
     if (signalID == interfaceDeletedSignal) {

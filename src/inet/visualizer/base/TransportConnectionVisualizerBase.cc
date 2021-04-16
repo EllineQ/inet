@@ -121,6 +121,9 @@ void TransportConnectionVisualizerBase::removeAllConnectionVisualizations()
 void TransportConnectionVisualizerBase::receiveSignal(cComponent *source, simsignal_t signal, cObject *object, cObject *details)
 {
 #ifdef INET_WITH_TCP_INET
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == inet::tcp::Tcp::tcpConnectionAddedSignal) {

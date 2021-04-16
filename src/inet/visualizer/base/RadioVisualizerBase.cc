@@ -145,6 +145,9 @@ void RadioVisualizerBase::removeAllRadioVisualizations()
 
 void RadioVisualizerBase::receiveSignal(cComponent *source, simsignal_t signal, intval_t value, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == IRadio::radioModeChangedSignal || signal == IRadio::receptionStateChangedSignal || signal == IRadio::transmissionStateChangedSignal) {

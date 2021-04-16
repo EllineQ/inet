@@ -134,6 +134,9 @@ void RoutingTableVisualizerBase::unsubscribe()
 
 void RoutingTableVisualizerBase::receiveSignal(cComponent *source, simsignal_t signal, cObject *object, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == routeAddedSignal || signal == routeDeletedSignal || signal == routeChangedSignal) {

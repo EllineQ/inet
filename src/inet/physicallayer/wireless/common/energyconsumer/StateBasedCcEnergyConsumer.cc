@@ -66,6 +66,9 @@ void StateBasedCcEnergyConsumer::initialize(int stage)
 
 void StateBasedCcEnergyConsumer::receiveSignal(cComponent *source, simsignal_t signal, intval_t value, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == IRadio::radioModeChangedSignal ||
@@ -83,6 +86,9 @@ void StateBasedCcEnergyConsumer::receiveSignal(cComponent *source, simsignal_t s
 
 void StateBasedCcEnergyConsumer::receiveSignal(cComponent *source, simsignal_t signal, double value, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == ICcEnergySource::currentConsumptionChangedSignal) {

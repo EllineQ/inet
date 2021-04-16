@@ -1022,6 +1022,9 @@ IRoute *Aodv::createRoute(const L3Address& destAddr, const L3Address& nextHop,
 
 void Aodv::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signalID));
 
     if (signalID == linkBrokenSignal) {

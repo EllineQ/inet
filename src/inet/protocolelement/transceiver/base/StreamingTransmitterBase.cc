@@ -61,6 +61,9 @@ void StreamingTransmitterBase::scheduleTxEndTimer(Signal *signal)
 
 void StreamingTransmitterBase::receiveSignal(cComponent *source, simsignal_t signal, cObject *object, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
     if (signal == PRE_MODEL_CHANGE) {
         if (auto notification = dynamic_cast<cPrePathCutNotification *>(object)) {

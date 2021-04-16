@@ -712,6 +712,9 @@ void RadioMedium::pickUpSignals(IRadio *receiverRadio)
 
 void RadioMedium::receiveSignal(cComponent *source, simsignal_t signal, intval_t value, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == IRadio::radioModeChangedSignal) {
@@ -736,6 +739,9 @@ void RadioMedium::receiveSignal(cComponent *source, simsignal_t signal, intval_t
 
 void RadioMedium::receiveSignal(cComponent *source, simsignal_t signal, cObject *value, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == interfaceConfigChangedSignal) {

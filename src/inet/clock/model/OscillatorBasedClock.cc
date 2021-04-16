@@ -138,6 +138,9 @@ const char *OscillatorBasedClock::resolveDirective(char directive) const
 
 void OscillatorBasedClock::receiveSignal(cComponent *source, int signal, cObject *obj, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == IOscillator::preOscillatorStateChangedSignal)

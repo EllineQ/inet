@@ -80,6 +80,9 @@ const char *PacketBasedTokenGenerator::resolveDirective(char directive) const
 
 void PacketBasedTokenGenerator::receiveSignal(cComponent *source, simsignal_t signal, double value, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signal));
 
     if (signal == TokenBasedServer::tokensDepletedSignal) {

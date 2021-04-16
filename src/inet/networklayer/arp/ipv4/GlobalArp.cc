@@ -266,6 +266,9 @@ L3Address GlobalArp::getL3AddressFor(const MacAddress& macAddress) const
 
 void GlobalArp::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signalID));
 
     // host associated. Link is up. Change the state to init.

@@ -886,6 +886,9 @@ void Rstp::flushOtherPorts(unsigned int portId)
 //void Rstp::receiveChangeNotification(int signalID, const cObject *obj)
 void Rstp::receiveSignal(cComponent *source, simsignal_t signalID, cObject *obj, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signalID));
 
     if (signalID == interfaceStateChangedSignal) {

@@ -297,6 +297,9 @@ void Ieee80211MgmtSta::startAssociation(ApInfo *ap, simtime_t timeout)
 
 void Ieee80211MgmtSta::receiveSignal(cComponent *source, simsignal_t signalID, intval_t value, cObject *details)
 {
+    if (getSimulation()->getSimulationStage() == CTX_CLEANUP)
+        return; // ignore notifications during cleanup
+
     Enter_Method("%s", cComponent::getSignalName(signalID));
 
     // Note that we are only subscribed during scanning!
