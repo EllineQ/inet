@@ -21,19 +21,22 @@ import inet.protocolelement.checksum.FcsHeaderChecker;
 import inet.protocolelement.checksum.FcsHeaderInserter;
 import inet.protocolelement.common.InterpacketGapInserter;
 import inet.protocolelement.fragmentation.FragmentNumberHeaderBasedDefragmenter;
+import inet.protocolelement.fragmentation.FragmentNumberHeaderBasedFragmenter;
+import inet.protocolelement.fragmentation.policy.LengthBasedFragmenterPolicy;
 import inet.protocolelement.ordering.SequenceNumbering;
-import inet.queueing.queue.InProgressQueue;
 import inet.protocolelement.transceiver.PacketReceiver;
 import inet.protocolelement.transceiver.StreamThroughTransmitter;
 import inet.queueing.classifier.ContentBasedClassifier;
 import inet.queueing.classifier.DynamicClassifier;
 import inet.queueing.common.PacketMultiplexer;
 import inet.queueing.marker.PacketTagger;
+import inet.queueing.queue.InProgressQueue;
 import inet.queueing.queue.PacketQueue;
 import inet.queueing.server.InstantServer;
 import inet.queueing.server.PreemptingServer;
 import inet.queueing.sink.PassivePacketSink;
 import inet.queueing.source.ActivePacketSource;
+
 
 module SenderHost
 {
@@ -73,8 +76,12 @@ module SenderHost
         server: InstantServer {
             @display("p=200,600");
         }
-        fragmenter: FragmentNumberHeaderBasedDefragmenter {
+        fragmenterPolicy: LengthBasedFragmenterPolicy {
+            @display("p=400,700");
+        }
+        fragmenter: FragmentNumberHeaderBasedFragmenter {
             @display("p=200,700");
+            fragmenterPolicyModule = "^.fragmenterPolicy";
         }
         multiplexer2: PacketMultiplexer {
             @display("p=250,800");
@@ -133,6 +140,8 @@ module DynamicDefragmenter
         }
         classifier: DynamicClassifier {
             @display("p=150,300");
+            submoduleName = "defragmenter";
+            moduleType = "inet.protocolelement.fragmentation.FragmentNumberHeaderBasedDefragmenter";
         }
     connections:
         in --> classifier.in;
