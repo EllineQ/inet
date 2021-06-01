@@ -28,4 +28,5 @@ moduleinterface IPacketFlow extends IPacketSink, IPacketSource
 {
     parameters:
         @display("i=block/star");
+        @omittedTypename(OmittedPacketFlow);
 }

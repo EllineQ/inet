@@ -21,4 +21,5 @@ moduleinterface IPacketLifeTimer
 {
     parameters:
         @display("i=block/timer");
+        @omittedTypename();
 }

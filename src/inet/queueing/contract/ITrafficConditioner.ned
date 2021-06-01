@@ -28,4 +28,5 @@ moduleinterface ITrafficConditioner extends IPassivePacketSink, IActivePacketSou
 {
     parameters:
         @display("i=block/downarrow");
+        @omittedTypename(OmittedTrafficConditioner);
 }

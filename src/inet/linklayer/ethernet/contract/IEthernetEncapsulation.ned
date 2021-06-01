@@ -24,6 +24,7 @@ moduleinterface IEthernetEncapsulation
 {
     parameters:
         @display("i=block/square");
+        @omittedTypename(OmittedEthernetEncapsulation);
     gates:
         input upperLayerIn @labels(Ieee802Ctrl/down); // higher layer
         output upperLayerOut @labels(Ieee802Ctrl/up); // higher layer
