@@ -25,7 +25,6 @@ class Gptp : public ClockUserModuleBase, public cListener
     //parameters:
     ModuleRefByPar<IInterfaceTable> interfaceTable;
 
-    GptpNodeType gptpNodeType;
     int slavePortId = -1; // interface ID of slave port
     std::set<int> masterPortIds; // interface IDs of master ports
     clocktime_t correctionField;
@@ -50,6 +49,7 @@ class Gptp : public ClockUserModuleBase, public cListener
     clocktime_t pdelayReqEventEgressTimestamp;   // sending time of last GptpPdelayReq
     clocktime_t pDelayReqProcessingTime;  // processing time between arrived PDelayReq and send of PDelayResp
     bool rcvdPdelayResp = false;
+    bool grandMaster = false;
 
     clocktime_t sentTimeSyncSync;
 
@@ -80,8 +80,15 @@ class Gptp : public ClockUserModuleBase, public cListener
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *msg) override;
-
+    virtual void handleParameterChange(const char *name) override;
     virtual void handleSelfMessage(cMessage *msg);
+
+    // helper functions
+    void setSlavePortFromPar();
+    void setMasterPortsFromPar();
+    void setGrandMasterFromPar();
+    void startSlavePort();
+    void stopSlavePort();
 
   public:
     virtual ~Gptp();

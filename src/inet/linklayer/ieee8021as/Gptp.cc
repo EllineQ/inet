@@ -12,6 +12,7 @@
 #include "inet/clock/model/SettableClock.h"
 #include "inet/common/IProtocolRegistrationListener.h"
 #include "inet/common/clock/ClockUserModuleBase.h"
+#include "inet/common/stlutils.h"
 #include "inet/linklayer/common/InterfaceTag_m.h"
 #include "inet/linklayer/common/MacAddress.h"
 #include "inet/linklayer/common/MacAddressTag_m.h"
@@ -45,82 +46,158 @@ Gptp::~Gptp()
     cancelAndDeleteClockEvent(requestMsg);
 }
 
+void Gptp::setMasterPortsFromPar()
+{
+    std::set<int> oldMasterPortIds = masterPortIds;
+    auto v = check_and_cast<cValueArray *>(par("masterPorts").objectValue())->asStringVector();
+    masterPortIds.clear();
+    for (const auto& p : v) {
+        auto nic = CHK(interfaceTable->findInterfaceByName(p.c_str()));
+        int portId = nic->getInterfaceId();
+        if (portId == slavePortId)
+            throw cRuntimeError("Parameter error: the port '%s' specified both master and slave port", p.c_str());
+        masterPortIds.insert(portId);
+    }
+    std::set<int> ids;
+    std::set_difference(oldMasterPortIds.begin(), oldMasterPortIds.end(), masterPortIds.begin(), masterPortIds.end(), std::inserter(ids, ids.end()));
+    for (auto id: ids) {
+        auto nic = interfaceTable->getInterfaceById(id);
+        nic->removeMulticastMacAddress(GPTP_MULTICAST_ADDRESS);
+        nic->unsubscribe(transmissionEndedSignal, this);
+        nic->unsubscribe(receptionEndedSignal, this);
+    }
+    ids.clear();
+    std::set_difference(masterPortIds.begin(), masterPortIds.end(), oldMasterPortIds.begin(), oldMasterPortIds.end(), std::inserter(ids, ids.end()));
+    for (auto id: ids) {
+        auto nic = interfaceTable->getInterfaceById(id);
+        nic->addMulticastMacAddress(GPTP_MULTICAST_ADDRESS);
+        nic->subscribe(transmissionEndedSignal, this);
+        nic->subscribe(receptionEndedSignal, this);
+    }
+}
+
+void Gptp::setSlavePortFromPar()
+{
+    int oldSlavePortId = slavePortId;
+    const char *str = par("slavePort");
+    if (*str) {
+        if (auto nic = interfaceTable->findInterfaceByName(str)) {
+            slavePortId = nic->getInterfaceId();
+            if (contains(masterPortIds, slavePortId))
+                throw cRuntimeError("Parameter error: the port '%s' specified both master and slave port", str);
+        }
+        else
+            throw cRuntimeError("Parameter error: the port '%s' not found in interface table", str);
+    }
+    else
+        slavePortId = -1;
+    if (oldSlavePortId != -1) {
+        auto nic = interfaceTable->getInterfaceById(oldSlavePortId);
+        nic->removeMulticastMacAddress(GPTP_MULTICAST_ADDRESS);
+        nic->unsubscribe(transmissionEndedSignal, this);
+        nic->unsubscribe(receptionEndedSignal, this);
+    }
+    if (slavePortId != -1) {
+        auto nic = interfaceTable->getInterfaceById(slavePortId);
+        nic->addMulticastMacAddress(GPTP_MULTICAST_ADDRESS);
+        nic->subscribe(transmissionEndedSignal, this);
+        nic->subscribe(receptionEndedSignal, this);
+        if (slavePortId != -1 && requestMsg == nullptr)
+            startSlavePort();
+    }
+    else {
+        stopSlavePort();
+    }
+    peerDelay = 0;
+    receivedTimeSync = CLOCKTIME_ZERO;
+}
+
+void Gptp::setGrandMasterFromPar()
+{
+    grandMaster = par("grandMaster");
+    /* Only grandmaster in the domain can initialize the synchronization message periodically
+     * so below condition checks whether it is grandmaster and then schedule first sync message */
+    if (grandMaster) {
+        gmRateRatio = 1.0;
+        if (slavePortId != -1)
+            throw cRuntimeError("Parameter error: Specified as GrandMaster, but the slave port also specified.");
+        // Schedule Sync message to be sent
+        selfMsgSync = new ClockEvent("selfMsgSync", GPTP_SELF_MSG_SYNC);
+
+        clocktime_t scheduleSync = par("syncInitialOffset");
+        //originTimestamp = clock->getClockTime() + scheduleSync;
+        scheduleClockEventAfter(scheduleSync, selfMsgSync);
+        stopSlavePort();
+    }
+    else {
+        // BRIDGE NODE or SLAVE NODE
+        cancelAndDeleteClockEvent(selfMsgSync);
+        selfMsgSync = nullptr;
+        if (slavePortId != -1 && requestMsg == nullptr)
+            startSlavePort();
+    }
+}
+
+void Gptp::startSlavePort()
+{
+        requestMsg = new ClockEvent("requestToSendSync", GPTP_REQUEST_TO_SEND_SYNC);
+
+        // Schedule Pdelay_Req message is sent by slave port
+        // without depending on node type which is grandmaster or bridge
+        selfMsgDelayReq = new ClockEvent("selfMsgPdelay", GPTP_SELF_MSG_PDELAY_REQ);
+        scheduleClockEventAfter(par("pdelayInitialOffset"), selfMsgDelayReq);
+}
+
+void Gptp::stopSlavePort()
+{
+        cancelAndDeleteClockEvent(requestMsg);
+        requestMsg = nullptr;
+        cancelAndDeleteClockEvent(selfMsgDelayReq);
+        selfMsgDelayReq = nullptr;
+}
+
+void Gptp::handleParameterChange(const char *name)
+{
+    if (0 == strcmp(name, "slavePort"))
+        setSlavePortFromPar();
+    else if (0 == strcmp(name, "masterPorts"))
+        setMasterPortsFromPar();
+    else if (0 == strcmp(name, "grandMaster"))
+        setGrandMasterFromPar();
+    else if (0 == strcmp(name, "correctionField"))
+        correctionField = par("correctionField");
+    else if (0 == strcmp(name, "syncInterval"))
+        syncInterval = par("syncInterval");
+    else if (0 == strcmp(name, "pdelayInterval"))
+        pdelayInterval = par("pdelayInterval");
+    else if (0 == strcmp(name, "pDelayReqProcessingTime"))
+        pDelayReqProcessingTime = par("pDelayReqProcessingTime");
+    else if (0 == strcmp(name, "syncInitialOffset") || 0 == strcmp(name, "pdelayInitialOffset"))
+        ;   // used directly
+    else
+        throw cRuntimeError("Parameter '%s' change unsupported", name);
+}
+
 void Gptp::initialize(int stage)
 {
     ClockUserModuleBase::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
-        gptpNodeType = static_cast<GptpNodeType>(cEnum::get("GptpNodeType", "inet")->resolve(par("gptpNodeType")));
         syncInterval = par("syncInterval");
+        pdelayInterval = par("pdelayInterval");
         pDelayReqProcessingTime = par("pDelayReqProcessingTime");
-    }
-    if (stage == INITSTAGE_LINK_LAYER) {
+        correctionField = par("correctionField");
+        interfaceTable.reference(this, "interfaceTableModule", true);
+        gmRateRatio = 1.0;
         peerDelay = 0;
         receivedTimeSync = CLOCKTIME_ZERO;
-
-        interfaceTable.reference(this, "interfaceTableModule", true);
-
-        const char *str = par("slavePort");
-        if (*str) {
-            if (gptpNodeType == MASTER_NODE)
-                throw cRuntimeError("Parameter inconsistency: MASTER_NODE with slave port");
-            auto nic = CHK(interfaceTable->findInterfaceByName(str));
-            slavePortId = nic->getInterfaceId();
-            nic->subscribe(transmissionEndedSignal, this);
-            nic->subscribe(receptionEndedSignal, this);
-        }
-        else
-            if (gptpNodeType != MASTER_NODE)
-                throw cRuntimeError("Parameter error: Missing slave port for %s", par("gptpNodeType").stringValue());
-
-        auto v = check_and_cast<cValueArray *>(par("masterPorts").objectValue())->asStringVector();
-        if (v.empty() and gptpNodeType != SLAVE_NODE)
-            throw cRuntimeError("Parameter error: Missing any master port for %s", par("gptpNodeType").stringValue());
-        for (const auto& p : v) {
-            auto nic = CHK(interfaceTable->findInterfaceByName(p.c_str()));
-            int portId = nic->getInterfaceId();
-            if (portId == slavePortId)
-                throw cRuntimeError("Parameter error: the port '%s' specified both master and slave port", p.c_str());
-            masterPortIds.insert(portId);
-            nic->subscribe(transmissionEndedSignal, this);
-            nic->subscribe(receptionEndedSignal, this);
-        }
-
-        if (slavePortId != -1) {
-            interfaceTable->getInterfaceById(slavePortId)->addMulticastMacAddress(GPTP_MULTICAST_ADDRESS);
-        }
-        for (auto id: masterPortIds) {
-            interfaceTable->getInterfaceById(id)->addMulticastMacAddress(GPTP_MULTICAST_ADDRESS);
-        }
-
-        correctionField = par("correctionField");
-
-        gmRateRatio = 1.0;
-
-        registerProtocol(Protocol::gptp, gate("socketOut"), gate("socketIn"));
-
-        /* Only grandmaster in the domain can initialize the synchronization message periodically
-         * so below condition checks whether it is grandmaster and then schedule first sync message */
-        if(gptpNodeType == MASTER_NODE)
-        {
-            // Schedule Sync message to be sent
-            selfMsgSync = new ClockEvent("selfMsgSync", GPTP_SELF_MSG_SYNC);
-
-            clocktime_t scheduleSync = par("syncInitialOffset");
-            originTimestamp = clock->getClockTime() + scheduleSync;
-            scheduleClockEventAfter(scheduleSync, selfMsgSync);
-        }
-        if(slavePortId != -1)
-        {
-            requestMsg = new ClockEvent("requestToSendSync", GPTP_REQUEST_TO_SEND_SYNC);
-
-            // Schedule Pdelay_Req message is sent by slave port
-            // without depending on node type which is grandmaster or bridge
-            selfMsgDelayReq = new ClockEvent("selfMsgPdelay", GPTP_SELF_MSG_PDELAY_REQ);
-            pdelayInterval = par("pdelayInterval");
-            scheduleClockEventAfter(par("pdelayInitialOffset"), selfMsgDelayReq);
-        }
         WATCH(peerDelay);
+    }
+    if (stage == INITSTAGE_LINK_LAYER) {
+        registerProtocol(Protocol::gptp, gate("socketOut"), gate("socketIn"));
+        setSlavePortFromPar();
+        setMasterPortsFromPar();
+        setGrandMasterFromPar();
     }
 }
 
@@ -128,6 +205,7 @@ void Gptp::handleSelfMessage(cMessage *msg)
 {
     switch(msg->getKind()) {
         case GPTP_SELF_MSG_SYNC:
+            ASSERT(grandMaster);
             // masterport:
             ASSERT(selfMsgSync == msg);
             sendSync();
@@ -144,7 +222,7 @@ void Gptp::handleSelfMessage(cMessage *msg)
             break;
 
         case GPTP_SELF_MSG_PDELAY_REQ:
-        // slaveport:
+            // slaveport:
             sendPdelayReq(); //TODO on slaveports only
             scheduleClockEventAfter(pdelayInterval, selfMsgDelayReq);
             break;
@@ -175,8 +253,13 @@ void Gptp::handleMessage(cMessage *msg)
                     processFollowUp(packet, check_and_cast<const GptpFollowUp *>(gptp.get()));
                     // Send a request to send Sync message
                     // through other gptp Ethernet interfaces
-                    if(gptpNodeType == BRIDGE_NODE)
+                    if(!masterPortIds.empty()) {
+                        // BRIDGE NODE
                         sendSync();
+                    }
+                    break;
+                case GPTPTYPE_PDELAY_REQ:
+                    EV_ERROR << CHK(omnetpp::cEnum::get("inet::GptpMessageType")->getStringFor((int)gptpMessageType)) << " arrived on slave port, dropped it\n";
                     break;
                 case GPTPTYPE_PDELAY_RESP:
                     processPdelayResp(packet, check_and_cast<const GptpPdelayResp *>(gptp.get()));
@@ -188,13 +271,20 @@ void Gptp::handleMessage(cMessage *msg)
                     throw cRuntimeError("Unknown gPTP packet type: %d", (int)(gptpMessageType));
             }
         }
-        else if (masterPortIds.find(incomingNicId) != masterPortIds.end()) {
+        else if (contains(masterPortIds, incomingNicId)) {
             // master port
-            if(gptpMessageType == GPTPTYPE_PDELAY_REQ) {
-                processPdelayReq(packet, check_and_cast<const GptpPdelayReq *>(gptp.get()));
-            }
-            else {
-                throw cRuntimeError("Unaccepted gPTP type: %d", (int)(gptpMessageType));
+            switch (gptpMessageType) {
+                case GPTPTYPE_PDELAY_REQ:
+                    processPdelayReq(packet, check_and_cast<const GptpPdelayReq *>(gptp.get()));
+                    break;
+                case GPTPTYPE_SYNC:
+                case GPTPTYPE_FOLLOW_UP:
+                case GPTPTYPE_PDELAY_RESP:
+                case GPTPTYPE_PDELAY_RESP_FOLLOW_UP:
+                    EV_ERROR << CHK(omnetpp::cEnum::get("inet::GptpMessageType")->getStringFor((int)gptpMessageType)) << " arrived on a master port, dropped it\n";
+                    break;
+                default:
+                    throw cRuntimeError("Unknown gPTP packet type: %d", (int)(gptpMessageType));
             }
         }
         else {
@@ -226,7 +316,8 @@ void Gptp::sendSync()
     packet->addTag<MacAddressReq>()->setDestAddress(GPTP_MULTICAST_ADDRESS);
     auto gptp = makeShared<GptpSync>();
     /* OriginTimestamp always get Sync departure time from grand master */
-    if (gptpNodeType == MASTER_NODE) {
+    if (slavePortId == -1) {
+        // MASTER NODE
         originTimestamp = clock->getClockTime();
     }
     gptp->setOriginTimestamp(CLOCKTIME_ZERO);
@@ -250,10 +341,12 @@ void Gptp::sendFollowUp(int portId, const GptpSync *sync, clocktime_t preciseOri
     gptp->setPreciseOriginTimestamp(preciseOriginTimestamp);
     gptp->setSequenceId(sync->getSequenceId());
 
-    if (gptpNodeType == MASTER_NODE)
+    if (slavePortId == -1) {
+        // MASTER NODE
         gptp->setCorrectionField(CLOCKTIME_ZERO);
-    else if (gptpNodeType == BRIDGE_NODE)
-    {
+    }
+    else if (!masterPortIds.empty()) {
+        // BRIDGE NODE
         /**************** Correction field calculation *********************************************
          * It is calculated by adding peer delay, residence time and packet transmission time      *
          * correctionField(i)=correctionField(i-1)+peerDelay+(timeReceivedSync-timeSentSync)*(1-f) *

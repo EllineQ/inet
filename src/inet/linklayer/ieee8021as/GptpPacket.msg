@@ -45,13 +45,6 @@ const B GPTP_PDELAY_RESP_FOLLOW_UP_PACKET_SIZE = B(54);
 
 namespace inet;
 
-enum GptpNodeType
-{
-    MASTER_NODE = 11;
-    BRIDGE_NODE = 12;
-    SLAVE_NODE  = 13;
-}
-
 enum GptpPortType
 {
     MASTER_PORT  = 2;
