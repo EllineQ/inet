@@ -14,15 +14,12 @@
 
 package inet.examples.ethernet.clocksynchronization;
 
+import inet.common.scenario.ScenarioManager;
 import inet.networks.WiredNetworkBase;
 import inet.node.ethernet.Eth1G;
 import inet.node.ethernet.EthernetSwitch;
 import inet.node.inet.StandardHost;
-import inet.queueing.contract.IPacketClassifier;
-import inet.queueing.contract.IPacketGate;
-import inet.queueing.contract.IPacketQueue;
-import inet.queueing.contract.IPacketScheduler;
-import inet.queueing.queue.CompoundPacketQueueBase;
+
 
 network ClockSynchronizationExampleNetwork extends WiredNetworkBase
 {
@@ -44,6 +41,9 @@ network ClockSynchronizationExampleNetwork extends WiredNetworkBase
         }
         sink2: StandardHost {
             @display("p=900,300");
+        }
+        scenarioManager: ScenarioManager {
+            @display("p=100,400;is=s");
         }
     connections:
         switch1.ethg++ <--> Eth1G <--> switch2.ethg++;
