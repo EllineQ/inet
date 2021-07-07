@@ -13,7 +13,6 @@ module GptpMaster extends GptpEndstation
         @display("i=device/pc2");
         forwarding = default(false);  // disable routing by default
         networkLayer.proxyARP = default(false);
-
-        gptp.gptpNodeType = "MASTER_NODE"; // @enum("gptpNodeType"): MASTER_NODE, BRIDGE_NODE, SLAVE_NODE
+        gptp.grandMaster = default(true);
     connections allowunconnected:
 }

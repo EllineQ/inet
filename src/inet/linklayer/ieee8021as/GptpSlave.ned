@@ -13,7 +13,6 @@ module GptpSlave extends GptpEndstation
         @display("i=device/pc2");
         forwarding = default(false);  // disable routing by default
         networkLayer.proxyARP = default(false);
-        gptp.gptpNodeType = "SLAVE_NODE"; // @enum("gptpNodeType"): MASTER_NODE, BRIDGE_NODE, SLAVE_NODE
     connections allowunconnected:
 }
 

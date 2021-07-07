@@ -93,7 +93,6 @@ module EthernetSwitch
         }
         gptp: <default("Gptp")> like IApp if hasGptp {
             @display("p=700,75");
-	        gptpNodeType = default("BRIDGE_NODE"); // @enum("gptpNodeType"): MASTER_NODE, BRIDGE_NODE, SLAVE_NODE
         }
         sc: MessageDispatcher {
             @display("p=800,150;b=1200,5");
