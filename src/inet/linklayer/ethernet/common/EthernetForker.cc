@@ -78,12 +78,14 @@ int EthernetForker::classifyPacket(Packet *packet)
     return 1;
 }
 
-cGate *EthernetForker::getRegistrationForwardingGate(cGate *gate)
+void EthernetForker::mapRegistrationForwardingGates(cGate *gate, std::function<void(cGate *)> f)
 {
-    if (contains(outputGates, gate))
-        return this->inputGate;
-    else if (gate == inputGate)
-        return outputGates[0];  // TODO
+    if (gate == inputGate) {
+        for (auto g : outputGates)
+            f(g);
+    }
+    else if (contains(outputGates, gate))
+        f(inputGate);
     else
         throw cRuntimeError("Unknown gate");
 }

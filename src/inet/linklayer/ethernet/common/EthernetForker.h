@@ -33,7 +33,7 @@ namespace inet {
  * - PAUSE frames
  * - others
  */
-class INET_API EthernetForker : public queueing::PacketClassifierBase, public TransparentProtocolRegistrationListener
+class INET_API EthernetForker : public queueing::PacketClassifierBase
 {
   protected:
     ModuleRefByPar<IInterfaceTable> interfaceTable;
@@ -63,7 +63,7 @@ class INET_API EthernetForker : public queueing::PacketClassifierBase, public Tr
      */
     virtual int classifyPacket(Packet *packet) override;
 
-    virtual cGate *getRegistrationForwardingGate(cGate *gate) override;
+    virtual void mapRegistrationForwardingGates(cGate *gate, std::function<void(cGate *)> f) override;
 };
 
 } // namespace inet
