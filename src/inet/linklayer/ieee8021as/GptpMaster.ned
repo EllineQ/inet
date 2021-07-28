@@ -15,5 +15,6 @@ module GptpMaster extends GptpEndstation
         networkLayer.proxyARP = default(false);
 
         gptp.gptpNodeType = "MASTER_NODE"; // @enum("gptpNodeType"): MASTER_NODE, BRIDGE_NODE, SLAVE_NODE
+        gptp.masterPorts = default(["eth0"]);
     connections allowunconnected:
 }

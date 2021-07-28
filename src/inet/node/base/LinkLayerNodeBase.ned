@@ -30,6 +30,7 @@ import inet.linklayer.ieee8021q.IIeee8021qLayer;
 import inet.linklayer.ieee8021r.IIeee8021rLayer;
 import inet.linklayer.ieee8022.IIeee8022Llc;
 import inet.networklayer.common.InterfaceTable;
+import inet.protocolelement.contract.IProtocolLayer;
 
 module LinkLayerNodeBase extends NodeBase
 {
@@ -65,13 +66,17 @@ module LinkLayerNodeBase extends NodeBase
             parameters:
                 @display("p=125,240;is=s");
         }
-        l: MessageDispatcher {
-            parameters:
-                @display("p=750,596;b=1000,5,,,,1");
-        }
         llc: <default("")> like IIeee8022Llc if typename != "" {
-            parameters:
-                @display("p=675,526");
+            @display("p=700,475");
+        }
+        cb: MessageDispatcher {
+            @display("p=800,525;b=1000,5");
+        }
+        bridging: <default("")> like IProtocolLayer if typename != "" {
+            @display("p=800,575;is=m");
+        }
+        bl: MessageDispatcher {
+            @display("p=800,625;b=1000,5");
         }
         li: MessageDispatcher {
             parameters:
@@ -116,17 +121,29 @@ module LinkLayerNodeBase extends NodeBase
         }
 
     connections allowunconnected:
-        llc.lowerLayerOut --> l.in++ if exists(llc);
-        llc.lowerLayerIn <-- l.out++ if exists(llc);
+        llc.lowerLayerOut --> cb.in++ if exists(llc);
+        llc.lowerLayerIn <-- cb.out++ if exists(llc);
 
-        l.out++ --> ieee8021q.upperLayerIn if exists(ieee8021q);
-        ieee8021q.upperLayerOut --> l.in++ if exists(ieee8021q);
+        cb.out++ --> bridging.upperLayerIn if exists(bridging);
+        bridging.upperLayerOut --> cb.in++ if exists(bridging);
 
-        l.out++ --> ieee8021r.upperLayerIn if exists(ieee8021r);
-        ieee8021r.upperLayerOut --> l.in++ if exists(ieee8021r);
+        bridging.lowerLayerOut --> bl.in++ if exists(bridging);
+        bl.out++ --> bridging.lowerLayerIn if exists(bridging);
+        
+        cb.out++ --> bl.in++ if !exists(bridging);
+        bl.out++ --> cb.in++ if !exists(bridging);
+        
+        bl.out++ --> li.in++;
+        li.out++ --> bl.in++;
 
-        l.out++ --> ethernet.upperLayerIn if exists(ethernet);
-        ethernet.upperLayerOut --> l.in++ if exists(ethernet);
+        bl.out++ --> ieee8021q.upperLayerIn if exists(ieee8021q);
+        ieee8021q.upperLayerOut --> bl.in++ if exists(ieee8021q);
+
+        bl.out++ --> ieee8021r.upperLayerIn if exists(ieee8021r);
+        ieee8021r.upperLayerOut --> bl.in++ if exists(ieee8021r);
+
+        bl.out++ --> ethernet.upperLayerIn if exists(ethernet);
+        ethernet.upperLayerOut --> bl.in++ if exists(ethernet);
 
         ieee8021q.lowerLayerOut --> li.in++ if exists(ieee8021q);
         li.out++ --> ieee8021q.lowerLayerIn if exists(ieee8021q);

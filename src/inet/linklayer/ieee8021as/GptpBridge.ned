@@ -13,4 +13,6 @@ module GptpBridge extends EthernetSwitch
 {
     parameters:
         hasGptp = true;
+        ethernet.typename = default("EthernetLayer"); // use Ethernet protocol layer outside of network interfaces
+        eth[*].typename = default("LayeredEthernetInterface"); // switch to modular Ethernet interface
 }

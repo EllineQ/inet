@@ -26,6 +26,11 @@ namespace inet {
 
 Define_Module(MessageDispatcher);
 
+std::ostream& operator<<(std::ostream& out, const MessageDispatcher::Key& foo) {
+    out << "[" << foo.protocolId << ", " << omnetpp::cEnum::get("inet::ServicePrimitive")->getStringFor(foo.servicePrimitive) << "]";
+    return out;
+}
+
 // TODO optimize gate access throughout this class
 // TODO factoring out some methods could also help
 
@@ -297,7 +302,7 @@ cGate *MessageDispatcher::handleMessage(Message *message, cGate *inGate)
 void MessageDispatcher::handleRegisterService(const Protocol& protocol, cGate *g, ServicePrimitive servicePrimitive)
 {
     Enter_Method("handleRegisterService");
-    EV_INFO << "Registering service" << EV_FIELD(protocol) << EV_FIELD(servicePrimitive) << EV_FIELD(gate, g) << EV_ENDL;
+    EV_INFO << "Handling service registration" << EV_FIELD(protocol) << EV_FIELD(servicePrimitive) << EV_FIELD(gate, g) << EV_ENDL;
     auto key = Key(protocol.getId(), servicePrimitive);
     auto it = serviceToGateIndex.find(key);
     if (it != serviceToGateIndex.end()) {
@@ -321,7 +326,7 @@ void MessageDispatcher::handleRegisterService(const Protocol& protocol, cGate *g
 void MessageDispatcher::handleRegisterAnyService(cGate *g, ServicePrimitive servicePrimitive)
 {
     Enter_Method("handleRegisterAnyService");
-    EV_INFO << "Registering any service" << EV_FIELD(servicePrimitive) << EV_FIELD(gate, g) << EV_ENDL;
+    EV_INFO << "Handling any service registration" << EV_FIELD(servicePrimitive) << EV_FIELD(gate, g) << EV_ENDL;
     auto key = Key(-1, servicePrimitive);
     auto it = serviceToGateIndex.find(key);
     if (it != serviceToGateIndex.end()) {
@@ -342,14 +347,25 @@ void MessageDispatcher::handleRegisterAnyService(cGate *g, ServicePrimitive serv
     }
 }
 
+static bool isForwardingProtocol(cGate *gate, ServicePrimitive servicePrimitive) {
+    if (gate->getType() == cGate::INPUT)
+        return servicePrimitive == SP_REQUEST || servicePrimitive == SP_RESPONSE;
+    else if (gate->getType() == cGate::OUTPUT)
+        return servicePrimitive == SP_INDICATION || servicePrimitive == SP_CONFIRM;
+    else
+        throw cRuntimeError("Unknown gate type");
+}
+
 void MessageDispatcher::handleRegisterProtocol(const Protocol& protocol, cGate *g, ServicePrimitive servicePrimitive)
 {
+    if (!isForwardingProtocol(g, servicePrimitive))
+        return;
     Enter_Method("handleRegisterProtocol");
-    EV_INFO << "Registering protocol" << EV_FIELD(protocol) << EV_FIELD(servicePrimitive) << EV_FIELD(gate, g) << EV_ENDL;
+    EV_INFO << "Handling protocol registration" << EV_FIELD(protocol) << EV_FIELD(servicePrimitive) << EV_FIELD(gate, g) << EV_ENDL;
     auto key = Key(protocol.getId(), servicePrimitive);
     auto it = protocolToGateIndex.find(key);
     if (it != protocolToGateIndex.end()) {
-        if (it->second != g->getIndex())
+        if (servicePrimitive == SP_INDICATION && it->second != g->getIndex())
             throw cRuntimeError("handleRegisterProtocol(): protocol is already registered: protocolId = %d, protocolName = %s, servicePrimitive = %d, pathStartGate = %s, pathEndGate = %s", protocol.getId(), protocol.str().c_str(), static_cast<int>(servicePrimitive), g->getPathStartGate()->getFullPath().c_str(), g->getPathEndGate()->getFullPath().c_str());
     }
     else {
@@ -369,7 +385,7 @@ void MessageDispatcher::handleRegisterProtocol(const Protocol& protocol, cGate *
 void MessageDispatcher::handleRegisterAnyProtocol(cGate *g, ServicePrimitive servicePrimitive)
 {
     Enter_Method("handleRegisterAnyProtocol");
-    EV_INFO << "Registering any protocol" << EV_FIELD(servicePrimitive) << EV_FIELD(gate, g) << EV_ENDL;
+    EV_INFO << "Handling any protocol registration" << EV_FIELD(servicePrimitive) << EV_FIELD(gate, g) << EV_ENDL;
     auto key = Key(-1, servicePrimitive);
     auto it = protocolToGateIndex.find(key);
     if (it != protocolToGateIndex.end()) {
@@ -393,7 +409,7 @@ void MessageDispatcher::handleRegisterAnyProtocol(cGate *g, ServicePrimitive ser
 void MessageDispatcher::handleRegisterInterface(const NetworkInterface& interface, cGate *out, cGate *in)
 {
     Enter_Method("handleRegisterInterface");
-    EV_INFO << "Registering interface" << EV_FIELD(interface) << EV_FIELD(out, out) << EV_FIELD(in) << EV_ENDL;
+    EV_INFO << "Handling interface registration" << EV_FIELD(interface) << EV_FIELD(out, out) << EV_FIELD(in) << EV_ENDL;
     auto it = interfaceIdToGateIndex.find(interface.getInterfaceId());
     if (it != interfaceIdToGateIndex.end()) {
         if (it->second != out->getIndex())

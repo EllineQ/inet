@@ -221,6 +221,7 @@ void StreamRedundancyConfigurator::computeStreamPolicyConfigurations(cValueMap *
             StreamIdentification streamIdentification;
             streamIdentification.stream = streamConfiguration->get("name").stringValue();
             streamIdentification.packetFilter = streamConfiguration->get("packetFilter").stringValue();
+            streamIdentification.packetDataFilter = streamConfiguration->get("packetDataFilter").stringValue();
             node->streamIdentifications.push_back(streamIdentification);
         }
         // decoding configuration
@@ -281,19 +282,20 @@ void StreamRedundancyConfigurator::configureStreams(Node *node)
     auto streamIdentifierLayer = networkNode->findModuleByPath(".bridging.streamIdentifier");
     if (streamIdentifierLayer == nullptr)
         streamIdentifierLayer = networkNode->findModuleByPath(".ieee8021r.policy.streamIdentifier");
-    auto streamIdentifier = streamIdentifierLayer->getSubmodule("identifier");
-    auto streamMerger = streamRelay->getSubmodule("merger");
-    auto streamSplitter = streamRelay->getSubmodule("splitter");
+    auto streamIdentifier = streamIdentifierLayer != nullptr ? streamIdentifierLayer->getSubmodule("identifier") : streamIdentifierLayer;
+    auto streamMerger = streamRelay != nullptr ? streamRelay->getSubmodule("merger") : nullptr;
+    auto streamSplitter = streamRelay != nullptr ? streamRelay->getSubmodule("splitter") : streamRelay;
     auto streamCoder = networkNode->findModuleByPath(".bridging.streamCoder");
     if (streamCoder == nullptr)
         streamCoder = networkNode->findModuleByPath(".ieee8021r.policy.streamCoder");
-    auto streamDecoder = streamCoder->getSubmodule("decoder");
-    auto streamEncoder = streamCoder->getSubmodule("encoder");
+    auto streamDecoder = streamCoder != nullptr ? streamCoder->getSubmodule("decoder") : nullptr;
+    auto streamEncoder = streamCoder != nullptr ? streamCoder->getSubmodule("encoder") : nullptr;
     if (streamIdentifier != nullptr && !node->streamIdentifications.empty()) {
         cValueArray *parameterValue = new cValueArray();
         for (auto& streamIdentification : node->streamIdentifications) {
             cValueMap *value = new cValueMap();
             value->set("packetFilter", streamIdentification.packetFilter);
+            value->set("packetDataFilter", streamIdentification.packetDataFilter);
             value->set("stream", streamIdentification.stream);
             parameterValue->add(value);
         }
@@ -333,9 +335,13 @@ void StreamRedundancyConfigurator::configureStreams(Node *node)
         streamSplitter->par("mapping") = parameterValue;
     }
     if (streamEncoder != nullptr && !node->streamEncodings.empty()) {
-        cValueMap *parameterValue = new cValueMap();
-        for (auto& streamEncoding : node->streamEncodings)
-            parameterValue->set(streamEncoding.name.c_str(), streamEncoding.vlanId);
+        cValueArray *parameterValue = new cValueArray();
+        for (auto& streamEncoding : node->streamEncodings) {
+            cValueMap *value = new cValueMap();
+            value->set("stream", streamEncoding.name.c_str());
+            value->set("vlan", streamEncoding.vlanId);
+            parameterValue->add(value);
+        }
         EV_INFO << "Configuring stream encoding" << EV_FIELD(networkNode) << EV_FIELD(streamEncoder) << EV_FIELD(parameterValue) << EV_ENDL;
         streamEncoder->par("mapping") = parameterValue;
     }

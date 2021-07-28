@@ -41,6 +41,7 @@ void PacketTransmitterBase::initialize(int stage)
         inputGate = gate("in");
         outputGate = gate("out");
         producer.reference(inputGate, false);
+        networkInterface = getContainingNicModule(this);
         txEndTimer = new ClockEvent("TxEndTimer");
     }
     else if (stage == INITSTAGE_QUEUEING) {

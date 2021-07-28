@@ -14,6 +14,8 @@ module GptpEndstation extends StandardHost
 {
     parameters:
         clock.typename = default("SettableClock");
+        ethernet.typename = default("EthernetLayer"); // use Ethernet protocol layer outside of network interfaces
+        eth[*].typename = default("LayeredEthernetInterface"); // switch to modular Ethernet interface
     submodules:
         gptp: Gptp {
             @display("p=700.11755,75.166");

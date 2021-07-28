@@ -105,11 +105,6 @@ class INET_API MessageDispatcher :
     virtual void handleRegisterAnyProtocol(cGate *gate, ServicePrimitive servicePrimitive) override;
 };
 
-std::ostream& operator<<(std::ostream& out, const MessageDispatcher::Key& foo) {
-    out << "[" << foo.protocolId << ", " << omnetpp::cEnum::get("inet::ServicePrimitive")->getStringFor(foo.servicePrimitive) << "]";
-    return out;
-}
-
 } // namespace inet
 
 #endif
