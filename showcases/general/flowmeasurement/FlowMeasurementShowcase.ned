@@ -15,8 +15,6 @@
 
 package inet.showcases.general.flowmeasurement;
 
-import inet.networklayer.contract.INetworkLayer;
-import inet.networklayer.ipv4.Ipv4NetworkLayer;
 import inet.networks.WiredNetworkBase;
 import inet.node.ethernet.Eth100M;
 import inet.node.ethernet.EthernetSwitch;
@@ -24,70 +22,6 @@ import inet.node.inet.INetworkNode;
 import inet.node.inet.StandardHost;
 import inet.protocolelement.measurement.IMeasurementLayer;
 
-
-module MyIpv4NetworkLayer like INetworkLayer
-{
-    parameters:
-        //        *.hasIpv4 = hasIpv4;
-        //        *.hasIpv6 = hasIpv6;
-        //        *.hasGn = hasGn;
-        bool forwarding = default(false);
-        bool multicastForwarding = default(false);
-        string interfaceTableModule;
-        string displayStringTextFormat = default("%i");
-        *.forwarding = this.forwarding;
-        *.multicastForwarding = this.multicastForwarding;
-        *.interfaceTableModule = default(absPath(this.interfaceTableModule));
-        *.displayStringTextFormat = displayStringTextFormat;
-        *.routingTableModule = default(absPath(".routingTable"));
-        *.arpModule = default(absPath(".arp"));
-        *.icmpModule = default(absPath(".icmp"));
-        @class(::inet::Ipv4NetworkLayer);
-        @display("i=block/fork");
-    gates:
-        input ifIn @labels(INetworkHeader);
-        output ifOut @labels(INetworkHeader);
-        input transportIn @labels(Ipv4ControlInfo/down);
-        output transportOut @labels(Ipv4ControlInfo/up);
-    submodules:
-        ipv4: Ipv4NetworkLayer {
-            parameters:
-                @display("p=100,100");
-        }
-        measurementLayer: <default("OmittedMeasurementLayer")> like IMeasurementLayer {
-            parameters:
-                @display("p=100,200");
-        }
-
-    connections:
-//        ipv4.ifIn <-- measurementLayer.upperLayerOut;
-//        ipv4.ifOut --> measurementLayer.upperLayerIn;
-//        transportIn --> ipv4.transportIn;
-//        transportOut <-- ipv4.transportOut;
-//        measurementLayer.lowerLayerIn <-- transportIn;
-//        measurementLayer.lowerLayerOut --> transportOut;
-
-        transportIn --> ipv4.transportIn;
-        transportOut <-- ipv4.transportOut;
-        ipv4.ifOut --> measurementLayer.upperLayerIn;
-        ipv4.ifIn <-- measurementLayer.upperLayerOut;
-        measurementLayer.lowerLayerOut --> ifOut;
-        measurementLayer.lowerLayerIn <-- ifIn;
-
-}
-
-module MyInheritedIpv4NetworkLayer extends Ipv4NetworkLayer
-{
-    submodules:
-        measurementLayer: <default("OmittedMeasurementLayer")> like IMeasurementLayer {
-            @display("p=603,607");
-        }
-    connections:
-        lp.out++ --> { @reconnect; } --> measurementLayer.upperLayerIn;
-        measurementLayer.lowerLayerOut --> { @reconnect; } --> ifOut;
-        lp.in++ <-- { @reconnect; } <-- measurementLayer.upperLayerOut;
-        measurementLayer.lowerLayerIn <-- { @reconnect; } <-- ifIn;
-}
 
 module MyStandardHost extends StandardHost
 {
