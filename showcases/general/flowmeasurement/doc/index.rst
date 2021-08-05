@@ -282,13 +282,21 @@ Here is the complete flow definition configuration (including the definitions al
    :end-at: *.switch2.eth[2].measurementLayer.measurementMaker.measure = "elapsedTime or queueingTime"
    :language: ini
 
-**TODO** explain
+.. **TODO** explain
 
-- the flownames
-- what we measure
-- need to be the same in both modules (is that above?)
-- only need one kind of module, but it doesnt matter
-- only need in eth2 in switches
+  - the flownames
+  - what we measure
+  - need to be the same in both modules (is that above?)
+  - only need one kind of module, but it doesnt matter
+  - only need in eth2 in switches
+
+**TODO** possible to record multiple flows in a recorder
+
+We set up the four flows between the clients and the servers, and also the flow between the two switches. We name flows based on source module (e.g. ``client1``). We set the measurement modules to measure the elapsed time and the queueing time. Some notes:
+
+- The packets from the two apps in a client belong to the same flow, it just has multiple exit points (``server1`` and ``server2``). 
+- The :ned:`FlowMeasurementRecorder` in the servers record flows from both clients. 
+- The ``switch1`` flow is between the two switch interfaces facing each other (``eth2`` in both switches), so that it's unnecessary for the other switch interfaces to have measurement modules.
 
 Results
 +++++++
@@ -356,10 +364,51 @@ Here is the flow definition in omnetpp.ini:
 - omitted type
 - how its putting it in the same flow
 
+We set up two flows (``BG`` and ``VID``) based on the source port of packets. The flows have multiple entry and exit points (in both clients and servers, respectively). Each measurement module in in MultiMeasurementLayer classifies packets to one of the flows, using the packet data filter. Just as in the previous configuration, we measure elapsed time and queueing time. Note that:
+
+- The recorders record both flows
+- We don't need the measurement recorders in the clients, and the measurement starters in the servers, so we set them to the omitted type/disable them.
+
+**TODO** whats the difference between flownames = client1 or client2 and each recorder recording a different flow?
+
+**TODO** to put packets from multiple sources to the same flow, just specify the same flowname; also, the different flow exit points have different statistics for the same flow
+
 Results
 +++++++
 
 **TODO** how to check flowtags on packets
+
+Checking what Flows Packets Belong to
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO** here is an example from the first config
+
+To check what flows a packet belongs to, one can take a look at the ``FlowTag``'s attached to the packet in Qtenv's object inspector. One way to do that is to select the packet, and switch the object inspector view to `Flat` mode, and open the encapsulated packet element:
+
+.. figure:: media/flowtag1.png
+   :align: center
+
+   Figure X. A packet in the object inspector, flat mode
+
+Under the encapsulated packet, open the `Region tags` element, and a FlowTag:
+
+Under the encapsulated packet, open `Region tags`, open a FlowTag, and the names array contains the flow names the packet belongs to:
+
+.. figure:: media/flowtag3.png
+   :align: center
+
+   Figure X. FlowTag attached to the packet
+
+The flow tags are attached as region tags, i.e. they are attached to a certain part of the packet. Here are all the region tags for the packet:
+
+.. figure:: media/flowtag2.png
+   :align: center
+
+   Figure X. Region tags attached to the packet
+
+In this case, there are three region tags attached to bytes 0-1000, and three more to bytes 1000-1042. The first three are added by the measurement module under the Udp in the hosts. The packet is still missing some headers at this point (i.e. IP, Ethernet). The last three region tags are added in switch1, when the packet already has those headers. Consequently, the second flow tag only contains the switch1 flow, because that part of the packet didn't exist when the client added its flowtag/at the client's measurement module.
+
+**TODO** why 1000-1042? shouldnt it be on the front?
 
 The `PacketEvent` Measurement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
