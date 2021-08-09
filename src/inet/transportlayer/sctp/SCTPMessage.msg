@@ -16,21 +16,9 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
-cplusplus {{
-#include "inet/networklayer/common/L3Address.h"
-}}
+import inet.networklayer.common.L3Address;
 
 namespace inet::sctp;
-
-cplusplus {{
-typedef cPacket *cPacketPtr;
-}}
-
-
-struct cPacketPtr;
-
-
-class noncobject L3Address;
 
 message SCTPMessage extends cPacket
 {
@@ -42,7 +30,7 @@ message SCTPMessage extends cPacket
     // Verification Tag
     uint32 tag;
     bool checksumOk;
-    abstract cPacketPtr chunks[];
+    abstract cPacket *chunks[];
 }
 
 
@@ -96,7 +84,7 @@ message SCTPInitAckChunk extends SCTPChunk
     L3Address addresses[];
     char cookie[];
     uint8 unrecognizedParameters[];
-    cPacketPtr stateCookie = nullptr;
+    cPacket *stateCookie = nullptr;
     uint32 msg_rwnd;
     uint8 random[]; //Random Number
     uint16 chunkTypes[];
@@ -109,7 +97,7 @@ message SCTPInitAckChunk extends SCTPChunk
 message SCTPCookieEchoChunk extends SCTPChunk
 {
     char cookie[];
-    cPacketPtr stateCookie = nullptr;
+    cPacket *stateCookie = nullptr;
     uint8 unrecognizedParameters[]; //for the serializer to send an Error chunk bundled with a Cookie-Echo
 }
 
@@ -237,7 +225,7 @@ message SCTPErrorChunk extends SCTPChunk
     @customize(true);
     bool TBit = 0;
     bool MBit = 0;
-    abstract cPacketPtr parameters[];
+    abstract cPacket *parameters[];
 }
 
 message SCTPParameter extends cPacket
@@ -259,7 +247,7 @@ message SCTPPacketDropChunk extends SCTPChunk
 message SCTPStreamResetChunk extends SCTPChunk
 {
     @customize(true);
-    abstract cPacketPtr parameters[];
+    abstract cPacket *parameters[];
 }
 
 message SCTPOutgoingSSNResetRequestParameter extends SCTPParameter
@@ -319,14 +307,14 @@ message SCTPAsconfChunk extends SCTPChunk
     uint32 serialNumber;
     L3Address addressParam;
     uint32 peerVTag; //for NAT
-    abstract cPacketPtr asconfParams[];
+    abstract cPacket *asconfParams[];
 }
 
 message SCTPAsconfAckChunk extends SCTPChunk
 {
     @customize(true);
     uint32 serialNumber;
-    abstract cPacketPtr asconfResponse[];
+    abstract cPacket *asconfResponse[];
 }
 
 message SCTPAddIPParameter extends SCTPParameter

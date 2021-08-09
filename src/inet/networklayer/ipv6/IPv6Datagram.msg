@@ -17,16 +17,17 @@
 // License along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
+import inet.networklayer.common.IPProtocolId;
+import inet.networklayer.contract.ipv6.IPv6Address;
+import inet.networklayer.contract.ipv6.IPv6ExtensionHeaders;
+
 cplusplus {{
 #include <iostream>
-#include "inet/networklayer/contract/ipv6/IPv6Address.h"
-#include "inet/networklayer/common/IPProtocolId_m.h"
 }}
 
 namespace inet;
 
 cplusplus {{
-class IPv6ExtensionHeader;
 typedef IPv6ExtensionHeader *IPv6ExtensionHeaderPtr;
 std::ostream& operator<<(std::ostream& os, IPv6ExtensionHeaderPtr eh);
 
@@ -35,10 +36,6 @@ const int IPv6_HEADER_BYTES = 40;
 
 
 enum IPProtocolId;
-
-class noncobject IPv6Address;
-
-class noncobject IPv6ExtensionHeaderPtr;
 
 //
 // IPv6 datagram. RFC 2460 Section 3.
@@ -60,16 +57,6 @@ packet IPv6Datagram
     short hopLimit = 0;
     int transportProtocol @enum(IPProtocolId);
 
-    abstract IPv6ExtensionHeaderPtr extensionHeader[]; // array of extension headers, subclassed from ~IPv6ExtensionHeader
-}
-
-
-//
-// This serves as the base class for all the other extension headers.
-//
-class IPv6ExtensionHeader
-{
-    short extensionType;
-    short byteLength = 0;   // byteLength = n * 8;
+    abstract IPv6ExtensionHeader * extensionHeader[]; // array of extension headers, subclassed from ~IPv6ExtensionHeader
 }
 

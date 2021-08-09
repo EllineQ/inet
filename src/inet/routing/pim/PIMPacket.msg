@@ -18,9 +18,9 @@
 //          Tamas Borbely (tomi@omnetpp.org)
 
 
-cplusplus {{
-#include "inet/networklayer/contract/ipv4/IPv4Address.h"
+import inet.networklayer.contract.ipv4.IPv4Address;
 
+cplusplus {{
 #define PIM_HEADER_LENGTH 4
 #define ENCODED_UNICODE_ADDRESS_LENGTH 6 // IPv4 only
 #define ENCODED_GROUP_ADDRESS_LENGTH   8 // IPv4 only
@@ -28,9 +28,6 @@ cplusplus {{
 }}
 
 namespace inet;
-
-//struct IPAddress;
-class noncobject IPv4Address;
 
 enum PIMPacketType
 {
@@ -92,7 +89,6 @@ class GenerationIDOption extends HelloOption
 //}
 
 cplusplus {{ class HelloOption; typedef HelloOption *HelloOptionPtr; }}
-class noncobject HelloOptionPtr;
 
 struct EncodedAddress
 {
@@ -125,7 +121,7 @@ packet PIMHello extends PIMPacket
 {
     @customize(true);
     type = Hello;
-    abstract HelloOptionPtr  options[];
+    abstract HelloOption *options[];
 }
 
 // Join/Prune message

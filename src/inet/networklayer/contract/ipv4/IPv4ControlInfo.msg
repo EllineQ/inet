@@ -16,18 +16,11 @@
 // License along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
-cplusplus {{
-#include "inet/networklayer/contract/ipv4/IPv4Address.h"
-#include "inet/networklayer/common/IPProtocolId_m.h"
-#include "inet/linklayer/common/MACAddress.h"
-}}
+import inet.networklayer.contract.ipv4.IPv4Address;
+import inet.networklayer.common.IPProtocolId;
+import inet.linklayer.common.MACAddress;
 
 namespace inet;
-
-enum IPProtocolId;
-
-class noncobject IPv4Address;
-class noncobject MACAddress;
 
 //
 // Control information for sending/receiving packets over IPv4.

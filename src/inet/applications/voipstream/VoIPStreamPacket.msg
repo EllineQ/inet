@@ -20,9 +20,9 @@ cplusplus {{
 #ifndef HAVE_FFMPEG
 #error Please install libavcodec, libavformat, libavutil or disable 'VoIPStream' feature.
 #endif
-
-#include "inet/common/ByteArray.h"
 }};
+
+import inet.common.ByteArray;
 
 namespace inet;
 
@@ -34,8 +34,6 @@ enum VoIPStreamPacketType
     VOICE = 1;
     SILENCE = 2;
 }
-
-class noncobject ByteArray;
 
 //
 // Packet type used by VoIPSourceApp and VoIPSinkApp

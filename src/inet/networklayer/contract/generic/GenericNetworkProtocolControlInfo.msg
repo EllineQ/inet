@@ -15,16 +15,10 @@
 // License along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
-cplusplus {{
-#include "inet/networklayer/common/L3Address.h"
-#include "inet/networklayer/common/IPProtocolId_m.h"
-}}
+import inet.networklayer.common.IPProtocolId;
+import inet.networklayer.common.L3Address;
 
 namespace inet;
-
-enum IPProtocolId;
-
-class noncobject L3Address;
 
 //
 // Control information for sending/receiving packets over the generic network protocol.

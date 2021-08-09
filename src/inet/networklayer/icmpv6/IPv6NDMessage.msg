@@ -16,19 +16,11 @@
 // License along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
-cplusplus {{
-#include "inet/networklayer/icmpv6/ICMPv6Message_m.h"
-#include "inet/networklayer/contract/ipv6/IPv6Address.h"
-#include "inet/linklayer/common/MACAddress.h"
-}}
+import inet.networklayer.icmpv6.ICMPv6Message;
+import inet.networklayer.contract.ipv6.IPv6Address;
+import inet.linklayer.common.MACAddress;
 
 namespace inet;
-
-packet ICMPv6Message;
-
-class noncobject IPv6Address;
-
-class noncobject MACAddress;
 
 // TLB options (type, length, bytes), length must be divisible by eight, max value is 8*255
 // Length in bytes:

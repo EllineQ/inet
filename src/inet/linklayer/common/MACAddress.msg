@@ -1,4 +1,6 @@
 //
+// Copyright (C) 2017 OpenSim Ltd.
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -10,23 +12,20 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see http://www.gnu.org/licenses/.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-import inet.common.Units;
-import inet.physicallayer.base.packetlevel.NarrowbandTransmissionBase;
-
 cplusplus {{
-#include "inet/physicallayer/base/packetlevel/FlatTransmissionBase.h"
+#include "inet/linklayer/common/MACAddress.h"
 }}
 
-namespace inet::physicallayer;
+namespace inet;
 
-class FlatTransmissionBase extends NarrowbandTransmissionBase
+class MACAddress
 {
-    @existingClass(true);
-    @descriptor(readonly);
-    int headerBitLength;
-    int dataBitLength;
-    bps bitrate @opaque;
+    @existingClass;
+    @opaque;
+    @toString(.str());
+    @fromString(MACAddress($));
 }
+

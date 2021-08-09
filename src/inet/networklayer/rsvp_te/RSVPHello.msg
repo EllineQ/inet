@@ -14,13 +14,9 @@
 //
 
 
-cplusplus {{
-#include "inet/networklayer/rsvp_te/RSVPPacket.h"
-}}
+import inet.networklayer.rsvp_te.RSVPPacket;
 
 namespace inet;
-
-class RSVPMessage;
 
 
 //

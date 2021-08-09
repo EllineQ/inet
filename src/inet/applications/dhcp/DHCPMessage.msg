@@ -17,15 +17,10 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
-cplusplus {{
-#include "inet/linklayer/common/MACAddress.h"
-#include "inet/networklayer/contract/ipv4/IPv4Address.h"
-}}
+import inet.linklayer.common.MACAddress;
+import inet.networklayer.contract.ipv4.IPv4Address;
 
 namespace inet;
-
-class noncobject MACAddress;
-class noncobject IPv4Address;
 
 enum DHCPOpcode
 {

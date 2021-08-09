@@ -13,17 +13,14 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
+import inet.transportlayer.rtp.RTCPPacket1;
+
 cplusplus {{
-#include "inet/transportlayer/rtp/RTCPPacket1.h"
 #include "inet/transportlayer/rtp/reports.h"
 #include "inet/transportlayer/rtp/sdes.h"
 }}
 
-class cArray;
-
 namespace inet::rtp;
-
-packet RTCPPacket;
 
 packet RTCPReceiverReportPacket extends RTCPPacket
 {

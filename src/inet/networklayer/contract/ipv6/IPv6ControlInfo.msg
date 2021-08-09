@@ -15,21 +15,13 @@
 // License along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
-
-cplusplus {{
-#include "inet/networklayer/contract/ipv6/IPv6Address.h"
-#include "inet/networklayer/common/IPProtocolId_m.h"
-}}
+import inet.networklayer.contract.ipv6.IPv6Address;
+import inet.networklayer.contract.ipv6.IPv6ExtensionHeaders;
+import inet.networklayer.common.IPProtocolId;
 
 namespace inet;
 
-enum IPProtocolId;
-
-class noncobject IPv6Address;
-class noncobject IPv6ExtensionHeaderPtr;
-
 cplusplus {{
-class IPv6ExtensionHeader;
 typedef IPv6ExtensionHeader *IPv6ExtensionHeaderPtr;
 std::ostream& operator<<(std::ostream& os, IPv6ExtensionHeaderPtr eh);
 
@@ -37,8 +29,6 @@ std::ostream& operator<<(std::ostream& os, IPv6ExtensionHeaderPtr eh);
 inline std::ostream& operator<<(std::ostream& os, IPv6ExtensionHeaderPtr eh) {return os;}
 #endif
 }}
-
-
 
 //
 // Control information for sending/receiving packets over IPv6.
@@ -77,5 +67,6 @@ class IPv6ControlInfo
     int interfaceId = -1; // interface on which the datagram was received, or
                           // should be sent (see ~InterfaceTable)
     bool multicastLoop;   // if true, sent multicast datagrams will be looped back
-    abstract IPv6ExtensionHeaderPtr extensionHeader[]; // array of extension headers, subclassed from ~IPv6ExtensionHeader
+    abstract IPv6ExtensionHeader * extensionHeader[]; // array of extension headers, subclassed from ~IPv6ExtensionHeader
 }
+

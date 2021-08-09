@@ -13,16 +13,14 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
+import inet.linklayer.common.MACAddress;
+import inet.networklayer.contract.ipv4.IPv4Address;
+
 cplusplus {{
-#include "inet/linklayer/common/MACAddress.h"
 #include "inet/networklayer/common/InterfaceEntry.h"
-#include "inet/networklayer/contract/ipv4/IPv4Address.h"
 }}
 
 namespace inet;
-
-class noncobject MACAddress;
-class noncobject IPv4Address;
 
 class InterfaceEntry extends cNamedObject
 {

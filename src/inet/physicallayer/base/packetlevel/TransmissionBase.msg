@@ -13,14 +13,13 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
+import inet.common.geometry.Geometry;
+
 cplusplus {{
 #include "inet/physicallayer/base/packetlevel/TransmissionBase.h"
 }}
 
 namespace inet::physicallayer;
-
-class noncobject Coord;
-class noncobject EulerAngles;
 
 class TransmissionBase extends cObject
 {

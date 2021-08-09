@@ -13,9 +13,7 @@
 //
 
 
-cplusplus {{
-#include "inet/networklayer/contract/ipv4/IPv4Address.h"
-}}
+import inet.networklayer.contract.ipv4.IPv4Address;
 
 namespace inet;
 
@@ -24,9 +22,6 @@ cplusplus {{
 
 typedef std::vector<struct TELinkStateInfo> TELinkStateInfoVector;
 }}
-
-
-class noncobject IPv4Address;
 
 //
 // Represents a link in the ~TED and in ~LinkStateMsg packets.

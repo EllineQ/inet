@@ -17,18 +17,29 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 
+import inet.networklayer.common.L3Address;
+
 cplusplus {{
-#include "inet/networklayer/common/L3Address.h"
 #include "inet/routing/dymo/DYMOdefs.h"
 }}
 
 namespace inet::dymo;
 
-class noncobject L3Address;
+// TODO metric types are defined in a separate [RFC 6551]
+enum DYMOMetricType {
+    HOP_COUNT = 3;    // Hop Count has Metric Type assignment 3
+};
 
-class noncobject DYMOSequenceNumber;
+class DYMOSequenceNumber
+{
+    @existingClass;
+    @opaque;
+    @byValue;
+    @fromString(string2ulong($));
+    @toString(ulong2string($));
+    @defaultValue(0);
+}
 
-class noncobject DYMOMetricType;
 
 //
 // classes
