@@ -205,9 +205,14 @@ Both simulations use the following network:
 .. figure:: media/Network.png
    :align: center
 
-It contains :ned:`StandardHost`'s connected by :ned:`EthernetSwitch`'s in a dumbbell topology. Note that the type of the hosts can be overridden from the ini file:
+It contains :ned:`StandardHost`'s connected by :ned:`EthernetSwitch`'s in a dumbbell topology. Note that the type of the hosts are parameterized (so that it can be overridden from the ini file):
 
-**TODO**
+.. **TODO**
+
+.. literalinclude:: ../FlowMeasurementShowcase.ned
+   :start-at: client1
+   :end-at: {
+   :language: ned
 
 .. In both simulations, each client sends packets to the two servers. The simulations differ only in what packet flows and measurements are defined.
 
@@ -312,16 +317,16 @@ In this configuration, we want to measure time and create packet flows below the
 As mentioned above, in this configuration, we want to add a measurement module to the network without using optional slots.
 To demonstrate that, we create packet flows below the :ned:`Udp` module in hosts. 
 
-To easiest way to insert a measurement module to into any compound module which doesn't have optional slots is to extend the module type with a measurement module as a new type. For example, we extend :ned:`StandardHost` into ``MyStandardHost`` in FlowMeasurementShowcase.ned. We could create two versions, one with a :ned:`FlowMeasurementStarter` and one with a :ned:`FlowMeasurementRecorder`, but it is more convenient and more generic to add a :ned:`MeasurementLayer`:
+To easiest way to insert a measurement module to into any compound module which doesn't have optional slots is to extend the module type with a measurement module as a new type. For example, we extend :ned:`StandardHost` into ``MyStandardHost`` in FlowMeasurementShowcase.ned. We could create two versions, one with a :ned:`FlowMeasurementStarter` and one with a :ned:`FlowMeasurementRecorder`, but it is more convenient and more generic to add a :ned:`MeasurementLayer`, which contains both:
 
 .. literalinclude:: ../FlowMeasurementShowcase.ned
    :start-at: MyStandardHost
    :end-before: FlowMeasurementShowcase
    :language: ned
 
-To make ``MyStandardHost`` even more generic, we make the measurement layer module optional (:ned:`OmittedMeasurementLayer` by default). Note that we just added an optional measurement layer slot.
+To make ``MyStandardHost`` even more generic, we make the measurement layer module optional (:ned:`OmittedMeasurementLayer` by default). Note that we just added an optional measurement layer slot. We can add a measurement layer module from the .INI file.
 
-We add the measurement layer module between the :ned:`Udp` module and the :ned:`MessageDispatcher` below it. The gates need to be reconnected to the new module.
+We add the measurement layer module between the :ned:`Udp` module and the :ned:`MessageDispatcher` below it. The gates need to be reconnected to the new module (as per the connection section in the NED code above).
 Here is the result:
 
 .. figure:: media/MyStandardHost.png
@@ -336,14 +341,14 @@ Now, we can use ``MyStandardHost`` in the .INI configuration:
    :end-at: server
    :language: ini
 
-We want to demonstrate classification of packets into different packet flows. To do that, we need multiple :ned:`FlowMeasurementStarter` modules, each entering packets to different flows. Conveniently, we can use the :ned:`MultiMeasurementLayer` module in the hosts:
+We want to demonstrate classification of packets into different packet flows. To do that, we need multiple :ned:`FlowMeasurementStarter` modules, each entering packets to different a flow. Conveniently, we can use the :ned:`MultiMeasurementLayer` module in the hosts:
 
 .. literalinclude:: ../omnetpp.ini
    :start-at: MultiMeasurementLayer
    :end-at: server
    :language: ini
 
-Our goal is to enter UDP packets with source port 500 to flow X, and those with source port 1000 to flow Y. Thus, we need two measurement starter modules:
+Our goal is to enter UDP packets with source port 500 to flow X, and those with source port 1000 to flow Y. Thus, we need two measurement starter modules (and two measurement recorders in the servers):
 
 .. literalinclude:: ../omnetpp.ini
    :start-at: numMeasurementModules
@@ -392,7 +397,7 @@ To check what flows a packet belongs to, one can take a look at the ``FlowTag``'
 
 Under the encapsulated packet, open the `Region tags` element, and a FlowTag:
 
-Under the encapsulated packet, open `Region tags`, open a FlowTag, and the names array contains the flow names the packet belongs to:
+Under the encapsulated packet, open `Region tags`, open a FlowTag, and the names array contains the flow names the packet belongs to (``client2`` and ``switch1`` in this case):
 
 .. figure:: media/flowtag3.png
    :align: center
