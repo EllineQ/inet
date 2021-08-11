@@ -191,8 +191,8 @@ The Example Simulations
 
 The showcase contains the following examples simulations:
 
-- TODO: Demonstrates creating packet flows by putting measurement modules into optional slots
-- TODO: Demonstrates the following: 
+- ``Default``: Demonstrates creating packet flows by putting measurement modules into optional slots
+- ``AnyLocation``: Demonstrates the following: 
   
   - adding measurement modules to any module
   - putting packets from multiple sources into the same flow
