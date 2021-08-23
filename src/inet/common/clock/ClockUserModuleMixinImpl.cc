@@ -19,6 +19,7 @@
 
 #include "inet/applications/base/ApplicationBase.h"
 #include "inet/common/lifecycle/OperationalMixin.h"
+
 #ifdef INET_WITH_QUEUEING
 #include "inet/queueing/base/ActivePacketSinkBase.h"
 #include "inet/queueing/base/ActivePacketSourceBase.h"
@@ -32,6 +33,12 @@
 #include "inet/queueing/base/PassivePacketSourceBase.h"
 #include "inet/queueing/base/TokenGeneratorBase.h"
 #endif // #ifdef INET_WITH_QUEUEING
+
+#ifdef INET_WITH_PROTOCOLSUPPORT
+#include "inet/protocolelement/shaper/EligibilityTimeFilter.h"
+#include "inet/protocolelement/shaper/EligibilityTimeGate.h"
+#include "inet/protocolelement/shaper/EligibilityTimeMeter.h"
+#endif // #ifdef INET_WITH_PROTOCOLSUPPORT
 
 namespace inet {
 
@@ -53,6 +60,12 @@ template class ClockUserModuleMixin<queueing::PassivePacketSinkBase>;
 template class ClockUserModuleMixin<queueing::PassivePacketSourceBase>;
 template class ClockUserModuleMixin<queueing::TokenGeneratorBase>;
 #endif // #ifdef INET_WITH_QUEUEING
+
+#ifdef INET_WITH_PROTOCOLSUPPORT
+template class ClockUserModuleMixin<EligibilityTimeFilter>;
+template class ClockUserModuleMixin<EligibilityTimeGate>;
+template class ClockUserModuleMixin<EligibilityTimeMeter>;
+#endif // #ifdef INET_WITH_PROTOCOLSUPPORT
 
 #endif // #ifdef INET_WITH_CLOCK
 
