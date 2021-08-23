@@ -39,7 +39,7 @@ enum IPv6TLVOptionTypes
 };
 
 
-class IPv6ExtensionHeader
+class IPv6ExtensionHeader extends cObject
 {
     short extensionType;
     short byteLength = 0;   // byteLength = n * 8;

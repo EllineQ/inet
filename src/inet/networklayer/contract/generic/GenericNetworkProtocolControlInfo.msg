@@ -23,7 +23,7 @@ namespace inet;
 //
 // Control information for sending/receiving packets over the generic network protocol.
 //
-class GenericNetworkProtocolControlInfo  //TODO rename!!!!
+class GenericNetworkProtocolControlInfo extends cObject //TODO rename!!!!
 {
     @customize(true);
     L3Address destinationAddress @getter(_getDestinationAddress);   // destination address

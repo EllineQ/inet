@@ -19,6 +19,12 @@
 import inet.linklayer.common.MACAddress;
 import inet.linklayer.common.Ieee802Ctrl;
 
+cplusplus {{
+#include "inet/common/BitVector.h"
+}}
+
+namespace inet;
+
 class BitVector
 {
     @existingClass;

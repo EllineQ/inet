@@ -83,7 +83,7 @@ enum TCPErrorCode
 //
 // @see ~TcpCommandCode, ~TcpStatusInd, ~TCPOpenCommand, ~TCPStatusInfo, ~ITCP
 //
-class TCPCommand
+class TCPCommand extends cObject
 {
     int connId = -1;   // identifies the socket within the application
     int userId = -1;   // id than can be freely used by the app

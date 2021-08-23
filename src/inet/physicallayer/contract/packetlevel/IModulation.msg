@@ -16,7 +16,7 @@
 //
 
 cplusplus {{
-#include "inet/physicallayer/wireless/common/contract/packetlevel/IModulation.h"
+#include "inet/physicallayer/contract/packetlevel/IModulation.h"
 }}
 
 namespace inet::physicallayer;

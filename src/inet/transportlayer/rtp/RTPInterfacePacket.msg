@@ -56,7 +56,7 @@ message RTPControlMsg
 };
 
 // base class
-class RTPControlInfo
+class RTPControlInfo extends cObject
 {
     short type @enum(RTP_IFP_TYPE);
 };

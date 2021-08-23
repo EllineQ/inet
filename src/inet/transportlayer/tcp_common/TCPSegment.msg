@@ -22,6 +22,7 @@ import inet.common.ByteArray;
 cplusplus {{
 #include <iostream>
 #include "inet/common/INETDefs.h"
+#include "inet/common/ByteArray.h"
 
 namespace inet {
 namespace tcp {
@@ -49,8 +50,8 @@ cplusplus {{
         return os << "(" << msg->getClassName() << ") " << msg->getName() << ": " << msg->str();
     }
 
-    inline void doPacking(cCommBuffer *b, cPacketPtr& msg) {msg->parsimPack(b);}
-    inline void doUnpacking(cCommBuffer *b, cPacketPtr& msg) {msg->parsimUnpack(b);}
+    inline void doPacking(cCommBuffer *b, cPacket *msg) {msg->parsimPack(b);}
+    inline void doUnpacking(cCommBuffer *b, cPacket *msg) {msg->parsimUnpack(b);}
 }}
 
 class TCPPayloadMessage extends cObject
@@ -106,7 +107,7 @@ enum TCPOptionNumbers
 //
 // This structure represents a single SACK (selective acknowledgment):
 //
-class SackItem
+class SackItem extends cObject
 {
     unsigned int start;     // start seq no. of sack block
     unsigned int end;       // end seq no. of sack block
@@ -114,11 +115,20 @@ class SackItem
 
 class Sack extends SackItem
 {
-    @customize(true);
 }
 
+cplusplus(Sack) {{
+  public:
+    Sack(unsigned int start_par, unsigned int end_par) { setSegment(start_par, end_par); }
+    virtual bool empty() const;
+    virtual bool contains(const Sack& other) const;
+    virtual void clear();
+    virtual void setSegment(unsigned int start_par, unsigned int end_par);
+    virtual std::string str() const override;
+}}
+
 // Header Options (optional):
-class TCPOption
+class TCPOption extends cObject
 {
     unsigned short kind @enum(TCPOptionNumbers) = -1;  // option kind
     unsigned short length = 1;                    // option length
@@ -237,7 +247,7 @@ packet TCPSegment
 
     // Header options (optional)
     // Currently only EOL, NOP, MSS, WS, SACK_PERMITTED, SACK and TS are implemented
-    abstract TCPOption *headerOption[];
+    TCPOption *headerOption[] @owned;
 
     // Payload length in octets (not an actual TCP header field).
     // This may not always be the same as encapsulatedPacket()->getByteLength();
@@ -253,7 +263,7 @@ packet TCPSegment
     // TCPSegment which carries the octet 10000. This way it is easily achieved
     // that the receiving TCP passes up the message object to its client
     // when the last byte of the message has arrived.
-    abstract TCPPayloadMessage payload[];
+    TCPPayloadMessage payload[];
 
     // Message bytes that travel in this segment as data.
     // This field is used only when the ~TCPDataTransferMode is TCP_TRANSFER_BYTESTREAM.

@@ -3,7 +3,7 @@ import inet.linklayer.common.MACAddress;
 
 namespace inet;
 
-class SimpleLinkLayerControlInfo
+class SimpleLinkLayerControlInfo extends cObject
 {
     @customize(true);
 

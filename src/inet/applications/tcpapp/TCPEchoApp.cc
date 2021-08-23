@@ -126,8 +126,8 @@ void TCPEchoApp::handleMessage(cMessage *msg)
 
             // if (dataTransferMode == TCP_TRANSFER_BYTESTREAM)
             if (baMsg) {
-                ByteArray& outdata = baMsg->getByteArray();
-                ByteArray indata = outdata;
+                const ByteArray& indata = baMsg->getByteArray();
+                ByteArray outdata = indata;
                 outdata.setDataArraySize(byteLen);
 
                 for (long i = 0; i < byteLen; i++)

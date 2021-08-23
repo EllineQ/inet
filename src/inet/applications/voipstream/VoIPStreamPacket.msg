@@ -24,6 +24,10 @@ cplusplus {{
 
 import inet.common.ByteArray;
 
+cplusplus {{
+#include "inet/common/ByteArray.h"
+}};
+
 namespace inet;
 
 //

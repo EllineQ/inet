@@ -68,23 +68,6 @@ class INET_API IPv6Datagram : public IPv6Datagram_Base, public INetworkDatagram
      */
     virtual void setExplicitCongestionNotification(int ecn) override { setTrafficClass((getTrafficClass() & 0x3f) | ((ecn & 0x3) << 6)); }
 
-    /** Generated but unused method, should not be called. */
-    virtual void setExtensionHeaderArraySize(unsigned int size) override;
-
-    /** Generated but unused method, should not be called. */
-    virtual void setExtensionHeader(unsigned int k, const IPv6ExtensionHeaderPtr& extensionHeader_var) override;
-
-    /**
-     * Returns the number of extension headers in this datagram
-     */
-    virtual unsigned int getExtensionHeaderArraySize() const override;
-
-    /**
-     * Returns the kth extension header in this datagram
-     */
-    virtual IPv6ExtensionHeaderPtr& getExtensionHeader(unsigned int k) override;
-    virtual const IPv6ExtensionHeaderPtr& getExtensionHeader(unsigned int k) const override {return const_cast<IPv6Datagram*>(this)->getExtensionHeader(k);}
-
     /**
      * Returns the extension header of the specified type,
      * or nullptr. If index is 0, then the first, if 1 then the

@@ -15,6 +15,7 @@
 
 cplusplus {{
 #include "inet/common/INETDefs.h"
+#include "inet/common/ByteArray.h"
 }}
 
 import inet.common.ByteArray;

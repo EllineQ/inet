@@ -17,6 +17,10 @@
 
 import inet.linklayer.common.MACAddress;
 
+cplusplus {{
+#include "inet/linklayer/contract/IMACFrame.h"
+}}
+
 namespace inet;
 
 //

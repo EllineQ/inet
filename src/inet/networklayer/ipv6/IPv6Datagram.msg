@@ -57,6 +57,6 @@ packet IPv6Datagram
     short hopLimit = 0;
     int transportProtocol @enum(IPProtocolId);
 
-    abstract IPv6ExtensionHeader * extensionHeader[]; // array of extension headers, subclassed from ~IPv6ExtensionHeader
+    IPv6ExtensionHeader * extensionHeader[] @owned; // array of extension headers, subclassed from ~IPv6ExtensionHeader
 }
 
