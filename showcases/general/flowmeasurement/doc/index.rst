@@ -224,10 +224,12 @@ The Configuration
 
 .. In this simulation, we'll put a measurement thing in the UDP app and the switches.
 
-In this simulation, two UDP apps in both clients send packets to the servers (``app 0`` to ``server1``, ``app 1`` to ``server2``).
+.. **TODO** we use StandardHost here
+
+In this simulation, the hosts are :ned:`StandardHost`'s. Two UDP apps in both clients send packets to the servers (``app 0`` to ``server1``, ``app 1`` to ``server2``).
 The servers have a UDP app that accepts the packets. We'll specify and measure five packet flows:
 
-- 4 packet flows going from each client to the two servers (client1->server1, client1->server2, client2->server1, client2->server2)
+- Four packet flows going from each client to the two servers (``client1`` -> ``server1``, ``client1`` -> ``server2``, ``client2`` -> ``server1``, ``client2`` -> ``server2``)
 - A packet flow going from switch1 to switch2
 
 .. note:: The four packet flows originating in the hosts "meet" at ``switch1``, so that the ``switch1`` packet flow overlaps with all four of them
@@ -247,14 +249,14 @@ The flows are visualized on the following image:
 
    Figure X. The specified packet flows
 
-The traffic source UDP apps in the clients are the :ned:`UdpApp` type, i.e. the modular UDP app. The module has an optional ``outbound`` module that we can specify in the .INI file to be a :ned:`FlowMeasurementStarter`:
+The traffic source UDP apps in the clients are the :ned:`UdpApp` type, i.e. the modular UDP app. This module has an optional ``outbound`` module that we can specify in the .INI file to be a :ned:`FlowMeasurementStarter`:
 
 .. literalinclude:: ../omnetpp.ini
    :start-at: *.client1.app[*].outbound.typename = "FlowMeasurementStarter"
    :end-at: *.client1.app[*].outbound.typename = "FlowMeasurementStarter"
    :language: ini
 
-The submodules of the UDP app:
+Here is the :ned:`FlowMeasurementStarter` in the UDP app:
 
 .. figure:: media/Default_UdpApp3.png
    :align: center
@@ -306,6 +308,10 @@ We set up the four flows between the clients and the servers, and also the flow 
 Results
 +++++++
 
+**TODO** Multiple exit points for the same flow -> recorded independently
+
+**TODO** some charts?
+
 Putting Measurement Modules Anywhere
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -317,7 +323,7 @@ In this configuration, we want to measure time and create packet flows below the
 As mentioned above, in this configuration, we want to add a measurement module to the network without using optional slots.
 To demonstrate that, we create packet flows below the :ned:`Udp` module in hosts. 
 
-To easiest way to insert a measurement module to into any compound module which doesn't have optional slots is to extend the module type with a measurement module as a new type. For example, we extend :ned:`StandardHost` into ``MyStandardHost`` in FlowMeasurementShowcase.ned. We could create two versions, one with a :ned:`FlowMeasurementStarter` and one with a :ned:`FlowMeasurementRecorder`, but it is more convenient and more generic to add a :ned:`MeasurementLayer`, which contains both:
+To easiest way to insert a measurement module into any compound module which doesn't have optional slots is to extend the module type with a measurement module as a new type. For example, we extend :ned:`StandardHost` into ``MyStandardHost`` in FlowMeasurementShowcase.ned. We could create two versions, one with a :ned:`FlowMeasurementStarter` and one with a :ned:`FlowMeasurementRecorder`, but it is more convenient and more generic to add a :ned:`MeasurementLayer`, which contains both:
 
 .. literalinclude:: ../FlowMeasurementShowcase.ned
    :start-at: MyStandardHost
@@ -326,7 +332,7 @@ To easiest way to insert a measurement module to into any compound module which 
 
 To make ``MyStandardHost`` even more generic, we make the measurement layer module optional (:ned:`OmittedMeasurementLayer` by default). Note that we just added an optional measurement layer slot. We can add a measurement layer module from the .INI file.
 
-We add the measurement layer module between the :ned:`Udp` module and the :ned:`MessageDispatcher` below it. The gates need to be reconnected to the new module (as per the connection section in the NED code above).
+We insert the measurement layer module between the :ned:`Udp` module and the :ned:`MessageDispatcher` below it. The gates need to be reconnected to the new module (as per the connection section in the NED code above).
 Here is the result:
 
 .. figure:: media/MyStandardHost.png
@@ -358,7 +364,7 @@ Our goal is to enter UDP packets with source port 500 to flow X, and those with 
 Here is the flow definition in omnetpp.ini:
 
 .. literalinclude:: ../omnetpp.ini
-   :start-at: *.client*.measurementLayer.measurementStarter[0].flowName = "BG"
+   :start-at: *.client*.measurementLayer.measurementStarter[0].flowName = "VID"
    :language: ini
 
 **TODO** explain
@@ -374,30 +380,45 @@ We set up two flows (``BG`` and ``VID``) based on the source port of packets. Th
 - The recorders record both flows
 - We don't need the measurement recorders in the clients, and the measurement starters in the servers, so we set them to the omitted type/disable them.
 
-**TODO** whats the difference between flownames = client1 or client2 and each recorder recording a different flow?
+**TODO** whats the difference between flownames = client1 or client2 and each recorder recording a different flow? -> seems like they are recorded to two statistics
 
-**TODO** to put packets from multiple sources to the same flow, just specify the same flowname; also, the different flow exit points have different statistics for the same flow
+**TODO** to put packets from multiple sources to the same flow, just specify the same flowname; also, the different flow exit points have different statistics for the same flow -> but not for the same flow with different entry points
+
+   basically: 
+
+   - a flow can have multiple entry and exit points
+   - at exit points, each flow is recorded to its own statistic
 
 Results
 +++++++
 
-**TODO** how to check flowtags on packets
+The measured elapsed time and queueing time values are available as the statistics of the measurement recorder modules. For example, here is the two elapsed time vectors (for the ``BG`` and ``VID`` flows) recorded by the measurement modules in ``server1``:
+
+.. figure:: media/BrowseData.png
+   :align: center
+
+   Figure X. Elapsed time vectors in ``server1``'s measurement layer
+
+.. figure:: media/server1elapsedtime.png
+   :align: center
+
+.. **TODO** how to check flowtags on packets
 
 Checking what Flows Packets Belong to
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO** here is an example from the first config
+.. **TODO** here is an example from the first config
 
-To check what flows a packet belongs to, one can take a look at the ``FlowTag``'s attached to the packet in Qtenv's object inspector. One way to do that is to select the packet, and switch the object inspector view to `Flat` mode, and open the encapsulated packet element:
+To check what flows a packet belongs to, one can take a look at the ``FlowTag``'s attached to the packet in Qtenv's object inspector. One way to do that is to select the packet, and switch the object inspector view to `Flat` mode, and open the encapsulated packet element. Here is an example from the ``Default`` simulation:
 
 .. figure:: media/flowtag1.png
    :align: center
 
    Figure X. A packet in the object inspector, flat mode
 
-Under the encapsulated packet, open the `Region tags` element, and a FlowTag:
+.. Under the encapsulated packet, open the `Region tags` element, and a FlowTag:
 
-Under the encapsulated packet, open `Region tags`, open a FlowTag, and the names array contains the flow names the packet belongs to (``client2`` and ``switch1`` in this case):
+Under the encapsulated packet, open `Region tags`, open a FlowTag; the names array contains the flow names the packet belongs to (``client2`` and ``switch1`` in this case):
 
 .. figure:: media/flowtag3.png
    :align: center
