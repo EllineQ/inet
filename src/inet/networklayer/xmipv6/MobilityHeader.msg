@@ -26,6 +26,7 @@ import inet.networklayer.ipv6.IPv6Datagram;
 
 cplusplus {{
 #include "inet/common/INETDefs.h"
+#include "inet/networklayer/ipv6/IPv6Datagram.h"
 }}
 
 namespace inet;

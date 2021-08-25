@@ -19,6 +19,7 @@ import inet.transportlayer.rtp.reports;
 cplusplus {{
 #include "inet/transportlayer/rtp/reports.h"
 #include "inet/transportlayer/rtp/sdes.h"
+#include "inet/transportlayer/rtp/RTCPPacket2.h"
 }}
 
 namespace inet::rtp;

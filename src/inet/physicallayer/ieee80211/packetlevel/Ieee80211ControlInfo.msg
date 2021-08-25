@@ -49,8 +49,8 @@ class IIeee80211PreambleMode
 class IIeee80211HeaderMode
 {
     @existingClass;
-    bps netBitrate @editable(false) @opaque;
-    bps grossBitrate @editable(false) @opaque;
+    bps netBitrate @editable(false);
+    bps grossBitrate @editable(false);
     int bitLength @editable(false);
     simtime_t duration @editable(false);
 //    IModulation *modulation @editable(false);
@@ -59,6 +59,7 @@ class IIeee80211HeaderMode
 class IIeee80211DataMode
 {
     @existingClass;
+    @descriptor(readonly);
     bps netBitrate @editable(false) @opaque;
     bps grossBitrate @editable(false) @opaque;
 //    IModulation *modulation @editable(false);
@@ -68,6 +69,7 @@ class IIeee80211DataMode
 class IIeee80211Mode extends cObject
 {
     @existingClass;
+    @descriptor(readonly);
     int legacyCwMin @editable(false);
     int legacyCwMax @editable(false);
     string name @editable(false);
@@ -88,6 +90,7 @@ class IIeee80211Mode extends cObject
 class Ieee80211ModeSet extends cObject
 {
     @existingClass;
+    @descriptor(readonly);
     IIeee80211Mode *slowestMode @getter(_getSlowestMode) @editable(false);
     IIeee80211Mode *fastestMode @getter(_getFastestMode) @editable(false);
     IIeee80211Mode *slowestMandatoryMode @getter(_getSlowestMandatoryMode) @editable(false);

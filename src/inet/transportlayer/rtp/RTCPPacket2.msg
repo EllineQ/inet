@@ -18,6 +18,7 @@ import inet.transportlayer.rtp.RTCPPacket1;
 cplusplus {{
 #include "inet/transportlayer/rtp/reports.h"
 #include "inet/transportlayer/rtp/sdes.h"
+#include "inet/transportlayer/rtp/RTCPPacket1.h"
 }}
 
 namespace inet::rtp;

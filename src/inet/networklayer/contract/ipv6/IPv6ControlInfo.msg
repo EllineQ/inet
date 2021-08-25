@@ -22,6 +22,9 @@ import inet.networklayer.common.IPProtocolId;
 namespace inet;
 
 cplusplus {{
+
+#include "inet/networklayer/ipv6/IPv6ExtensionHeaders.h"
+
 typedef IPv6ExtensionHeader *IPv6ExtensionHeaderPtr;
 std::ostream& operator<<(std::ostream& os, IPv6ExtensionHeaderPtr eh);
 
@@ -54,7 +57,7 @@ inline std::ostream& operator<<(std::ostream& os, IPv6ExtensionHeaderPtr eh) {re
 // ~IPv6 also puts the original datagram object into the control info, because
 // it may be needed by higher layers.
 //
-class IPv6ControlInfo
+class IPv6ControlInfo extends cObject
 {
     @customize(true);
     short protocol @enum(IPProtocolId);  // transport layer protocol

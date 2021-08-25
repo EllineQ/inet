@@ -44,11 +44,6 @@ inline uint32 seqMax(uint32 a, uint32 b) { return ((a - b) < (1UL << 31)) ? a : 
 class INET_API TCPSegment : public TCPSegment_Base, public ITransportPacket
 {
   protected:
-    typedef std::list<TCPPayloadMessage> PayloadList;
-    PayloadList payloadList;
-    typedef std::vector<TCPOption *> OptionList;
-    OptionList headerOptionList;
-
   private:
     void copy(const TCPSegment& other);
     void clean();

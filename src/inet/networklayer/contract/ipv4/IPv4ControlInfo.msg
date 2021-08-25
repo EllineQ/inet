@@ -52,7 +52,7 @@ namespace inet;
 // ~IPv4 also puts the original datagram object into the control info, because
 // it may be needed by higher layers (for example, by ~ICMP for error reporting).
 //
-class IPv4ControlInfo
+class IPv4ControlInfo extends cObject
 {
     @customize(true);
     IPv4Address destAddr;   // destination IPv4 address

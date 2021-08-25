@@ -53,7 +53,7 @@ enum PIMHelloOptionType
    AddressList = 24;
 }
 
-class HelloOption
+class HelloOption extends cObject
 {
     short type @enum(PIMHelloOptionType);
 }
@@ -119,9 +119,8 @@ packet PIMPacket
 // DM, SM
 packet PIMHello extends PIMPacket
 {
-    @customize(true);
     type = Hello;
-    abstract HelloOption *options[];
+    HelloOption *options[] @owned @allowReplace;
 }
 
 // Join/Prune message

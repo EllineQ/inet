@@ -23,6 +23,7 @@ import inet.networklayer.contract.ipv6.IPv6ExtensionHeaders;
 
 cplusplus {{
 #include <iostream>
+#include "inet/networklayer/ipv6/IPv6ExtensionHeaders.h"
 }}
 
 namespace inet;

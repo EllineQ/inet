@@ -22,7 +22,7 @@ namespace inet;
 //
 // Network level control information for sending/receiving packets.
 //
-class SimpleNetworkProtocolControlInfo
+class SimpleNetworkProtocolControlInfo extends cObject
 {
     @customize(true);
     L3Address destinationAddress @getter(_getDestinationAddress);

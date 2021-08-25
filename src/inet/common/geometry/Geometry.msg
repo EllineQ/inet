@@ -36,14 +36,14 @@ class Coord
 class EulerAngles
 {
     @existingClass;
-    rad alpha;
-    rad beta;
-    rad gamma;
+    double alpha;
+    double beta;
+    double gamma;
 }
 
 class Quaternion
 {
     @existingClass;
-    double s;
-    Coord v;
+    double realPart;
+    Coord vectorPart;
 }

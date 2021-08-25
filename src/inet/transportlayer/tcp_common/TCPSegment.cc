@@ -215,8 +215,8 @@ void TCPSegment::addPayloadMessage(cPacket *msg, uint32 endSequenceNo)
     take(msg);
 
     TCPPayloadMessage payload;
-    payload.endSequenceNo = endSequenceNo;
-    payload.msg = msg;
+    payload.setEndSequenceNo(endSequenceNo);
+    payload.setMsg(msg);
     payloadList.push_back(payload);
 }
 
