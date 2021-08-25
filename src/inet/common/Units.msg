@@ -25,7 +25,7 @@ cplusplus{{
 using namespace units::values;
 }}
 
-namespace inet::units::values;
+//namespace inet::units::values;
 
 class b    { @existingClass; @primitive; @fromString(b(string2long($)));      @toString(unit2string($));   @defaultValue(b(-1)); }
 //class B    { @existingClass; @primitive; @fromString(B(string2long($)));      @toString(unit2string($));   @defaultValue(B(-1)); }
