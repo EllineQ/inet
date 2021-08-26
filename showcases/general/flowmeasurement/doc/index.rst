@@ -13,6 +13,8 @@ This showcase demonstrates timing measurments along packet flows, i.e. paths var
 The Model
 ---------
 
+The following sections contain an overview of packet flows. For more information, refer to the **TODO** section of the INET manual.
+
 Overview of Packet Flows
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -37,7 +39,7 @@ By default, statistics in INET are collected by modules, only based on data the 
 
 .. - nem derul ki h egy csomag milyen utvonalon kozlekedett; timing measurements for different paths - kulon statisztikailag merni a kulonbozo utvonalakat
 
-For timing measurements that require access to data of multiple modules, `packet flows` can be defined. A packet flow is a logical classification of packets, identified by its name, in the whole network and over the whole duration of the simulation. Flows are defined by active modules which create entry and exit points of the flow in the network. The following are some more properties of packet flows:
+For timing measurements that require access to data of multiple modules, `packet flows` can be defined. A packet flow is a logical classification of packets, identified by its name, in the whole network and over the whole duration of the simulation. Flows are defined per-bit, i.e. each bit of the packet is kept track of in regard to which flow it belongs to (as continuous regions of the packet). Flows are defined by active modules which create entry and exit points of the flow in the network. The following are some more properties of packet flows:
 
 - A packet can be part of any number of flows
 - A packet can enter and exit a flow multiple times
@@ -186,6 +188,12 @@ Visualizing Packet Flows
 
 :ned:`PacketFlowVisualizer` (also included in :ned:`IntegratedVisualizer`) can display packet flows in the network as dashed arrows annotated by the flow name. The arrows are color-coded so that flows can be differentiated. The visualization can be enabled with the :par:`displayPacketFlows` parameter, e.g. ``*.visualizer.packetFlowVisualizer.displayPacketFlows = true``.
 
+.. **TODO** link to manual
+
+.. **TODO** its per-bit
+
+.. **TODO** note about the elapsedTime not the sum of the others
+
 The Example Simulations
 -----------------------
 
@@ -194,9 +202,9 @@ The showcase contains the following examples simulations:
 - ``Default``: Demonstrates creating packet flows by putting measurement modules into optional slots
 - ``AnyLocation``: Demonstrates the following: 
   
-  - adding measurement modules to any module
-  - putting packets from multiple sources into the same flow
-  - classifying packets to flows based on port numbers
+  - Adding measurement modules to an arbitrary module
+  - Putting packets from multiple sources into the same flow
+  - Classifying packets into flows based on port numbers
 
 .. FlowMeasurementStarter and FlowMeasurementRecorder
 
@@ -205,7 +213,9 @@ Both simulations use the following network:
 .. figure:: media/Network.png
    :align: center
 
-It contains :ned:`StandardHost`'s connected by :ned:`EthernetSwitch`'s in a dumbbell topology. Note that the type of the hosts are parameterized (so that it can be overridden from the ini file):
+   Figure X. The network
+
+It contains hosts connected by :ned:`EthernetSwitch`'s in a dumbbell topology. Note that the type of the hosts is parameterized (so that it can be overridden from the ini file):
 
 .. **TODO**
 
@@ -227,10 +237,10 @@ The Configuration
 .. **TODO** we use StandardHost here
 
 In this simulation, the hosts are :ned:`StandardHost`'s. Two UDP apps in both clients send packets to the servers (``app 0`` to ``server1``, ``app 1`` to ``server2``).
-The servers have a UDP app that accepts the packets. We'll specify and measure five packet flows:
+Each server has a UDP app that accepts the packets. We specify and measure five packet flows:
 
 - Four packet flows going from each client to the two servers (``client1`` -> ``server1``, ``client1`` -> ``server2``, ``client2`` -> ``server1``, ``client2`` -> ``server2``)
-- A packet flow going from switch1 to switch2
+- A packet flow going from ``switch1`` to ``switch2``
 
 .. note:: The four packet flows originating in the hosts "meet" at ``switch1``, so that the ``switch1`` packet flow overlaps with all four of them
 
@@ -242,14 +252,14 @@ The servers have a UDP app that accepts the packets. We'll specify and measure f
   - how to configure that
   - illustrate the flows
 
-The flows are visualized on the following image:
+The specified flows are visualized on the following image:
 
 .. figure:: media/flows2.png
    :align: center
 
    Figure X. The specified packet flows
 
-The traffic source UDP apps in the clients are the :ned:`UdpApp` type, i.e. the modular UDP app. This module has an optional ``outbound`` module that we can specify in the .INI file to be a :ned:`FlowMeasurementStarter`:
+The UDP apps in the clients and servers are the :ned:`UdpApp` type, i.e. the modular UDP app. This module has an optional ``outbound`` module that we can specify in the .INI file to be a :ned:`FlowMeasurementStarter` in the clients:
 
 .. literalinclude:: ../omnetpp.ini
    :start-at: *.client1.app[*].outbound.typename = "FlowMeasurementStarter"
@@ -263,7 +273,7 @@ Here is the :ned:`FlowMeasurementStarter` in the UDP app:
 
    Figure X. :ned:`FlowMeasurementStarter` in UDP app
 
-Similarly, we specify the inbound module in the server UDP app to be a :ned:`FlowMeasurementRecorder`:
+Similarly, we specify the inbound module in the server UDP apps to be a :ned:`FlowMeasurementRecorder`:
 
 .. literalinclude:: ../omnetpp.ini
    :start-at: *.server1.app[*].inbound.typename = "FlowMeasurementRecorder"
@@ -291,19 +301,29 @@ Here is the complete flow definition configuration (including the definitions al
 
 .. **TODO** explain
 
-  - the flownames
+  - the flownamesFlows can overlap in time and in network topology
+
+  Flows can have multiple entry and exit points
+  
+  Certain packets are classified to be entering the flow by FlowMeasurementStarter modules, for example by matching a filter. The modules add a FlowTag that describes the kind of measurements requested by the user. Based on the FlowTag, the measurements are added to the packet as metadata by certain modules as it travels in the network.
+  
+  For example, we specify queueing time to be measured. The queues along the packet’s route add the measured queueing time to the packet’s metadata. Packets exit the flow at FlowMeasurementRecorder modules. The measurements are recorded there as the FlowMeasurementRecorder module’s statistics, containing the total queueing time incurred by the packet.
+  
+  The FlowMeasurementStarter and FlowMeasurementRecorder modules have the same set 
   - what we measure
   - need to be the same in both modules (is that above?)
   - only need one kind of module, but it doesnt matter
   - only need in eth2 in switches
 
-**TODO** possible to record multiple flows in a recorder
+.. **TODO** possible to record multiple flows in a recorder
 
 We set up the four flows between the clients and the servers, and also the flow between the two switches. We name flows based on source module (e.g. ``client1``). We set the measurement modules to measure the elapsed time and the queueing time. Some notes:
 
 - The packets from the two apps in a client belong to the same flow, it just has multiple exit points (``server1`` and ``server2``). 
 - The :ned:`FlowMeasurementRecorder` in the servers record flows from both clients. 
 - The ``switch1`` flow is between the two switch interfaces facing each other (``eth2`` in both switches), so that it's unnecessary for the other switch interfaces to have measurement modules.
+- | It is possible to record multiple flows in a FlowMeasurementRecorder, e.g.: 
+  | ``*.server1.app[*].inbound.flowName = "client1 or client2"``.
 
 Results
 +++++++
@@ -340,7 +360,7 @@ Here is the result:
 
    Figure X. The Contents of ``MyStandardHost``
 
-Now, we can use ``MyStandardHost`` in the .INI configuration:
+Now, we can use the ``MyStandardHost`` type in the .INI configuration:
 
 .. literalinclude:: ../omnetpp.ini
    :start-at: MyStandardHost
@@ -356,6 +376,9 @@ We want to demonstrate classification of packets into different packet flows. To
 
 Our goal is to enter UDP packets with source port 500 to flow X, and those with source port 1000 to flow Y. Thus, we need two measurement starter modules (and two measurement recorders in the servers):
 
+**TODO** do we need two recorders? yes. because there is classification in the server side as well. -> actually, do we need packet data filters in the servers?
+if not, one recorder might be enough
+
 .. literalinclude:: ../omnetpp.ini
    :start-at: numMeasurementModules
    :end-at: server
@@ -367,20 +390,21 @@ Here is the flow definition in omnetpp.ini:
    :start-at: *.client*.measurementLayer.measurementStarter[0].flowName = "VID"
    :language: ini
 
-**TODO** explain
+.. **TODO** explain
 
-- flow names
-- packet data filter
-- measurements
-- omitted type
-- how its putting it in the same flow
+  - flow names
+  - packet data filter
+  - measurements
+  - omitted type
+  - how its putting it in the same flow
 
 We set up two flows (``BG`` and ``VID``) based on the source port of packets. The flows have multiple entry and exit points (in both clients and servers, respectively). Each measurement module in in MultiMeasurementLayer classifies packets to one of the flows, using the packet data filter. Just as in the previous configuration, we measure elapsed time and queueing time. Note that:
 
-- The recorders record both flows
+- The recorders record both flows independently
+- Packets from multiple sources that belong to the same flow are recorded together
 - We don't need the measurement recorders in the clients, and the measurement starters in the servers, so we set them to the omitted type/disable them.
 
-**TODO** whats the difference between flownames = client1 or client2 and each recorder recording a different flow? -> seems like they are recorded to two statistics
+.. **TODO** whats the difference between flownames = client1 or client2 and each recorder recording a different flow? -> seems like they are recorded to two statistics
 
 **TODO** to put packets from multiple sources to the same flow, just specify the same flowname; also, the different flow exit points have different statistics for the same flow -> but not for the same flow with different entry points
 
@@ -392,24 +416,28 @@ We set up two flows (``BG`` and ``VID``) based on the source port of packets. Th
 Results
 +++++++
 
-The measured elapsed time and queueing time values are available as the statistics of the measurement recorder modules. For example, here is the two elapsed time vectors (for the ``BG`` and ``VID`` flows) recorded by the measurement modules in ``server1``:
+The measured elapsed time and queueing time values are available as the statistics of the measurement recorder modules. For example, here is the two elapsed time vectors (for the ``BG`` and ``VID`` flows) recorded by the measurement modules in ``server1``, displayed in the IDE's analysis tool:
 
 .. figure:: media/BrowseData.png
    :align: center
 
    Figure X. Elapsed time vectors in ``server1``'s measurement layer
 
-.. figure:: media/server1elapsedtime.png
+Here is the same data selection plotted on a scatter chart:
+
+.. figure:: media/anylocation_server1_elapsedtime.png
    :align: center
+
+   Figure X. Plot of elapsed time in ``server1``
 
 .. **TODO** how to check flowtags on packets
 
-Checking what Flows Packets Belong to
+Checking which Flows Packets Belong to
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. **TODO** here is an example from the first config
 
-To check what flows a packet belongs to, one can take a look at the ``FlowTag``'s attached to the packet in Qtenv's object inspector. One way to do that is to select the packet, and switch the object inspector view to `Flat` mode, and open the encapsulated packet element. Here is an example from the ``Default`` simulation:
+To check which flows a packet belongs to, one can take a look at the ``FlowTag``'s attached to the packet in Qtenv's object inspector. One way to do that is to select the packet, and switch the object inspector view to `Flat` mode, and open the encapsulated packet element. Here is an example from the ``Default`` simulation:
 
 .. figure:: media/flowtag1.png
    :align: center
@@ -425,16 +453,25 @@ Under the encapsulated packet, open `Region tags`, open a FlowTag; the names arr
 
    Figure X. FlowTag attached to the packet
 
-The flow tags are attached as region tags, i.e. they are attached to a certain part of the packet. Here are all the region tags for the packet:
+Flows are defined per-bit of the packet, thus the flow tags are attached as region tags, i.e. they are attached to a certain part of the packet. Here are all the region tags for the packet:
 
 .. figure:: media/flowtag2.png
    :align: center
 
    Figure X. Region tags attached to the packet
 
-In this case, there are three region tags attached to bytes 0-1000, and three more to bytes 1000-1042. The first three are added by the measurement module under the Udp in the hosts. The packet is still missing some headers at this point (i.e. IP, Ethernet). The last three region tags are added in switch1, when the packet already has those headers. Consequently, the second flow tag only contains the switch1 flow, because that part of the packet didn't exist when the client added its flowtag/at the client's measurement module.
+In this case, there are three region tags attached to bytes 0-1000, and three more to bytes 1000-1042. (the ``ElapsedTimeTag`` and ``QueueingTimeTag`` contains the elapsed and queieing times, the ``FlowTag`` contains the flow name). The first three tags are added by the measurement module under the ``udp`` module in the hosts. The packet is just the data payload (1000B) at this point, without UDP, IP and Ethernet encapsulation (42B headers total). The last three region tags are added in switch1, when the packet already has those headers. Consequently, the second flow tag only contains the switch1 flow, because that part of the packet didn't exist when the client added its flowtag/at the client's measurement module.
 
-**TODO** why 1000-1042? shouldnt it be on the front?
+.. **TODO** why 1000-1042? shouldnt it be on the front? github issue #716; note: most nem mukodik de a magyarazat helytallo
+
+.. note:: From the image above, it appears that the headers are added to the end of the packet, instead of the beginning. This is a bug yet to be fixed, but the above explanation is correct.
+
+.. **TODO** replace image when github issue #716 is fixed
+
+Components of the `ElapsedTime`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``ElapsedTime`` measurement measures the total time spent in the flow. The other measurements (QueueingTime, ProcessingTime, etc.) measure the specific events within the elapsed time. However, the sum of all these specific measurements might be less than the elapsed time for a particular packet, because the measurements are per-bit. For example, if there is packet streaming in the network, some bits are transmitted later than others. In the meantime, they "wait" in the transmitting module (e.g. streaming Ethernet Interface) for transmission of previous bits, and also in the receiving interface for reception of subsequent bits. This wait time is only contained in the elapsed time measurement.
 
 The `PacketEvent` Measurement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
