@@ -19,19 +19,11 @@ import inet.networklayer.contract.ipv6.IPv6Address;
 import inet.networklayer.contract.ipv6.IPv6ExtensionHeaders;
 import inet.networklayer.common.IPProtocolId;
 
-namespace inet;
-
 cplusplus {{
-
 #include "inet/networklayer/ipv6/IPv6ExtensionHeaders.h"
-
-typedef IPv6ExtensionHeader *IPv6ExtensionHeaderPtr;
-std::ostream& operator<<(std::ostream& os, IPv6ExtensionHeaderPtr eh);
-
-#ifndef WITH_IPv6
-inline std::ostream& operator<<(std::ostream& os, IPv6ExtensionHeaderPtr eh) {return os;}
-#endif
 }}
+
+namespace inet;
 
 //
 // Control information for sending/receiving packets over IPv6.

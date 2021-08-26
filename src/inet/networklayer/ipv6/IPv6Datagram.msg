@@ -29,9 +29,6 @@ cplusplus {{
 namespace inet;
 
 cplusplus {{
-typedef IPv6ExtensionHeader *IPv6ExtensionHeaderPtr;
-std::ostream& operator<<(std::ostream& os, IPv6ExtensionHeaderPtr eh);
-
 const int IPv6_HEADER_BYTES = 40;
 }}
 

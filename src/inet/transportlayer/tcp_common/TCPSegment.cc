@@ -105,28 +105,8 @@ TCPSegment& TCPSegment::operator=(const TCPSegment& other)
     return *this;
 }
 
-void TCPSegment::copy(const TCPSegment& other)
-{
-    for (const auto & elem : other.payloadList)
-        addPayloadMessage(elem.msg->dup(), elem.endSequenceNo);
-    for (const auto opt: other.headerOptionList)
-        addHeaderOption(opt->dup());
-}
-
 TCPSegment::~TCPSegment()
 {
-    clean();
-}
-
-void TCPSegment::clean()
-{
-    dropHeaderOptions();
-
-    while (!payloadList.empty()) {
-        cPacket *msg = payloadList.front().msg;
-        payloadList.pop_front();
-        dropAndDelete(msg);
-    }
 }
 
 void TCPSegment::truncateData(unsigned int truncleft, unsigned int truncright)
@@ -136,78 +116,17 @@ void TCPSegment::truncateData(unsigned int truncleft, unsigned int truncright)
     if (0 != byteArray.getDataArraySize())
         byteArray.truncateData(truncleft, truncright);
 
-    while (!payloadList.empty() && (payloadList.front().endSequenceNo - sequenceNo) <= truncleft) {
-        cPacket *msg = payloadList.front().msg;
-        payloadList.pop_front();
-        dropAndDelete(msg);
+    while (payload_arraysize > 0 && (payload[0].getEndSequenceNo() - sequenceNo) <= truncleft) {
+        erasePayload(0);
     }
 
     sequenceNo += truncleft;
     payloadLength -= truncleft + truncright;
 
     // truncate payload data correctly
-    while (!payloadList.empty() && (payloadList.back().endSequenceNo - sequenceNo) > payloadLength) {
-        cPacket *msg = payloadList.back().msg;
-        payloadList.pop_back();
-        dropAndDelete(msg);
+    while (payload_arraysize > 0 && (payload[payload_arraysize-1].getEndSequenceNo() - sequenceNo) > payloadLength) {
+        erasePayload(payload_arraysize-1);
     }
-}
-
-void TCPSegment::parsimPack(cCommBuffer *b) const
-{
-    TCPSegment_Base::parsimPack(b);
-    b->pack((int)headerOptionList.size());
-    for (const auto opt: headerOptionList) {
-        b->packObject(opt);
-    }
-    b->pack((int)payloadList.size());
-    for (PayloadList::const_iterator it = payloadList.begin(); it != payloadList.end(); it++) {
-        b->pack(it->endSequenceNo);
-        b->packObject(it->msg);
-    }
-}
-
-void TCPSegment::parsimUnpack(cCommBuffer *b)
-{
-    TCPSegment_Base::parsimUnpack(b);
-    int i, n;
-    b->unpack(n);
-    for (i = 0; i < n; i++) {
-        TCPOption *opt = check_and_cast<TCPOption*>(b->unpackObject());
-        headerOptionList.push_back(opt);
-    }
-    b->unpack(n);
-    for (i = 0; i < n; i++) {
-        TCPPayloadMessage payload;
-        b->unpack(payload.endSequenceNo);
-        payload.msg = check_and_cast<cPacket*>(b->unpackObject());
-        payloadList.push_back(payload);
-    }
-}
-
-void TCPSegment::setPayloadArraySize(unsigned int size)
-{
-    throw cRuntimeError(this, "setPayloadArraySize() not supported, use addPayloadMessage()");
-}
-
-unsigned int TCPSegment::getPayloadArraySize() const
-{
-    return payloadList.size();
-}
-
-TCPPayloadMessage& TCPSegment::getPayload(unsigned int k)
-{
-    auto i = payloadList.begin();
-    while (k > 0 && i != payloadList.end())
-        (++i, --k);
-    if (i == payloadList.end())
-        throw cRuntimeError("Model error at getPayload(): index out of range");
-    return *i;
-}
-
-void TCPSegment::setPayload(unsigned int k, const TCPPayloadMessage& payload_var)
-{
-    throw cRuntimeError(this, "setPayload() not supported, use addPayloadMessage()");
 }
 
 void TCPSegment::addPayloadMessage(cPacket *msg, uint32 endSequenceNo)
@@ -217,51 +136,29 @@ void TCPSegment::addPayloadMessage(cPacket *msg, uint32 endSequenceNo)
     TCPPayloadMessage payload;
     payload.setEndSequenceNo(endSequenceNo);
     payload.setMsg(msg);
-    payloadList.push_back(payload);
+    insertPayload(payload);
 }
 
 cPacket *TCPSegment::removeFirstPayloadMessage(uint32& endSequenceNo)
 {
-    if (payloadList.empty())
-        return nullptr;
-
-    cPacket *msg = payloadList.front().msg;
-    endSequenceNo = payloadList.front().endSequenceNo;
-    payloadList.pop_front();
-    drop(msg);
+    cPacket *msg = nullptr;
+    if (payload_arraysize > 0) {
+        msg = payload[0].dropMsg();
+        endSequenceNo = payload[0].getEndSequenceNo();
+        erasePayload(0);
+        drop(msg);
+    }
     return msg;
 }
 
 void TCPSegment::addHeaderOption(TCPOption *option)
 {
-    headerOptionList.push_back(option);
-}
-
-void TCPSegment::setHeaderOptionArraySize(unsigned int size)
-{
-    throw cRuntimeError(this, "setHeaderOptionArraySize() not supported, use addHeaderOption()");
-}
-
-unsigned int TCPSegment::getHeaderOptionArraySize() const
-{
-    return headerOptionList.size();
-}
-
-TCPOptionPtr& TCPSegment::getHeaderOption(unsigned int k)
-{
-    return headerOptionList.at(k);
-}
-
-void TCPSegment::setHeaderOption(unsigned int k, const TCPOptionPtr& headerOption)
-{
-    throw cRuntimeError(this, "setHeaderOption() not supported, use addHeaderOption()");
+    insertHeaderOption(option);
 }
 
 void TCPSegment::dropHeaderOptions()
 {
-    for (auto opt : headerOptionList)
-        delete opt;
-    headerOptionList.clear();
+    setHeaderOptionArraySize(0);
 }
 
 

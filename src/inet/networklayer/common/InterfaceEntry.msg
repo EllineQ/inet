@@ -33,5 +33,5 @@ class InterfaceEntry extends cNamedObject
     bool loopback @getter("isLoopback");
     int mtu @getter("getMTU");
     MACAddress macAddress;
-    IPv4Address ipv4Address @opaque @getter("getIPv4Address");
+    IPv4Address ipv4Address @byValue @getter("getIPv4Address");
 }

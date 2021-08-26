@@ -57,7 +57,7 @@ cplusplus {{
 class TCPPayloadMessage extends cObject
 {
     unsigned int endSequenceNo;
-    cPacket *msg = nullptr;      // pointer to payload msg
+    cPacket *msg = nullptr @owned;      // pointer to payload msg
 }
 
 //

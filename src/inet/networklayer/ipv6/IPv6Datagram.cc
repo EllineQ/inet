@@ -22,11 +22,6 @@ namespace inet {
 
 Register_Class(IPv6Datagram);
 
-std::ostream& operator<<(std::ostream& os, IPv6ExtensionHeaderPtr eh)
-{
-    return os << "(" << eh->getClassName() << ") " << eh->str();
-}
-
 IPv6ExtensionHeader *IPv6Datagram::findExtensionHeaderByType(IPProtocolId extensionType, int index) const
 {
     for (size_t i = 0; i < extensionHeader_arraysize; i++) {
