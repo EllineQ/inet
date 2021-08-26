@@ -95,16 +95,6 @@ unsigned short TCPSegment::getHeaderOptionArrayLength()
     return usedLength;
 }
 
-TCPSegment& TCPSegment::operator=(const TCPSegment& other)
-{
-    if (this == &other)
-        return *this;
-    clean();
-    TCPSegment_Base::operator=(other);
-    copy(other);
-    return *this;
-}
-
 TCPSegment::~TCPSegment()
 {
 }

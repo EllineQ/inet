@@ -43,19 +43,11 @@ inline uint32 seqMax(uint32 a, uint32 b) { return ((a - b) < (1UL << 31)) ? a : 
  */
 class INET_API TCPSegment : public TCPSegment_Base, public ITransportPacket
 {
-  protected:
-  private:
-    void copy(const TCPSegment& other);
-    void clean();
-
   public:
     TCPSegment(const char *name = nullptr, int kind = 0) : TCPSegment_Base(name, kind) {}
-    TCPSegment(const TCPSegment& other) : TCPSegment_Base(other) { copy(other); }
+    TCPSegment(const TCPSegment& other) : TCPSegment_Base(other) {}
     ~TCPSegment();
-    TCPSegment& operator=(const TCPSegment& other);
     virtual TCPSegment *dup() const override { return new TCPSegment(*this); }
-    virtual void parsimPack(cCommBuffer *b) const override;
-    virtual void parsimUnpack(cCommBuffer *b) override;
 
     /**
      * Adds a message object to the TCP segment. The sequence number + 1 of the
