@@ -199,6 +199,10 @@ The Example Simulations
 
 The showcase contains the following examples simulations:
 
+**TODO** Basic-Advanced / OptionalSlots...
+
+**TODO** ide fejezetcim
+
 - ``Default``: Demonstrates creating packet flows by putting measurement modules into optional slots
 - ``AnyLocation``: Demonstrates the following: 
   
@@ -215,7 +219,7 @@ Both simulations use the following network:
 
    Figure X. The network
 
-It contains hosts connected by :ned:`EthernetSwitch`'s in a dumbbell topology. Note that the type of the hosts is parameterized (so that it can be overridden from the ini file):
+It contains hosts connected by switches (:ned:`EthernetSwitch`) in a dumbbell topology. Note that the type of the hosts is parameterized (so that it can be overridden from the ini file):
 
 .. **TODO**
 
@@ -236,13 +240,13 @@ The Configuration
 
 .. **TODO** we use StandardHost here
 
-In this simulation, the hosts are :ned:`StandardHost`'s. Two UDP apps in both clients send packets to the servers (``app 0`` to ``server1``, ``app 1`` to ``server2``).
+In this simulation, the type of the hosts is :ned:`StandardHost`. Two UDP apps in both clients send packets to the servers (``app[0]`` to ``server1``, ``app[1]`` to ``server2``).
 Each server has a UDP app that accepts the packets. We specify and measure five packet flows:
 
 - Four packet flows going from each client to the two servers (``client1`` -> ``server1``, ``client1`` -> ``server2``, ``client2`` -> ``server1``, ``client2`` -> ``server2``)
 - A packet flow going from ``switch1`` to ``switch2``
 
-.. note:: The four packet flows originating in the hosts "meet" at ``switch1``, so that the ``switch1`` packet flow overlaps with all four of them
+.. note:: The four packet flows originating in the hosts "meet" at ``switch1``, so that the packet flow between the switches (``switch1`` flow) overlaps with all four of them
 
 .. so
 
@@ -330,7 +334,7 @@ Results
 
 **TODO** Multiple exit points for the same flow -> recorded independently
 
-**TODO** some charts?
+**TODO** some charts? -> histograms! ha van valami ertelmes histogram
 
 Putting Measurement Modules Anywhere
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -338,19 +342,21 @@ Putting Measurement Modules Anywhere
 The Configuration
 +++++++++++++++++
 
-In this configuration, we want to measure time and create packet flows below the :ned:`Udp` module in hosts.
+In this configuration, we want to create packet flows below the :ned:`Udp` module in hosts.
+
+**TODO** ossze fog mixelodni a 2 application (eddig az appban volt)
 
 As mentioned above, in this configuration, we want to add a measurement module to the network without using optional slots.
 To demonstrate that, we create packet flows below the :ned:`Udp` module in hosts. 
 
-To easiest way to insert a measurement module into any compound module which doesn't have optional slots is to extend the module type with a measurement module as a new type. For example, we extend :ned:`StandardHost` into ``MyStandardHost`` in FlowMeasurementShowcase.ned. We could create two versions, one with a :ned:`FlowMeasurementStarter` and one with a :ned:`FlowMeasurementRecorder`, but it is more convenient and more generic to add a :ned:`MeasurementLayer`, which contains both:
+The easiest way to insert a measurement module into any module (which doesn't already have an optional submodule) is to extend with a measurement module as a new type. For example, we extend :ned:`StandardHost` into ``MyStandardHost`` in FlowMeasurementShowcase.ned. We could create two versions, one with a :ned:`FlowMeasurementStarter` and one with a :ned:`FlowMeasurementRecorder`, but it is more convenient and more generic to add a :ned:`MeasurementLayer`, which contains both:
 
 .. literalinclude:: ../FlowMeasurementShowcase.ned
    :start-at: MyStandardHost
    :end-before: FlowMeasurementShowcase
    :language: ned
 
-To make ``MyStandardHost`` even more generic, we make the measurement layer module optional (:ned:`OmittedMeasurementLayer` by default). Note that we just added an optional measurement layer slot. We can add a measurement layer module from the .INI file.
+To make ``MyStandardHost`` even more generic, we make the measurement layer module optional (:ned:`OmittedMeasurementLayer` by default). Note that we just added an optional measurement layer submodule. We can add a measurement layer module from the .INI file.
 
 We insert the measurement layer module between the :ned:`Udp` module and the :ned:`MessageDispatcher` below it. The gates need to be reconnected to the new module (as per the connection section in the NED code above).
 Here is the result:
@@ -367,7 +373,7 @@ Now, we can use the ``MyStandardHost`` type in the .INI configuration:
    :end-at: server
    :language: ini
 
-We want to demonstrate classification of packets into different packet flows. To do that, we need multiple :ned:`FlowMeasurementStarter` modules, each entering packets to different a flow. Conveniently, we can use the :ned:`MultiMeasurementLayer` module in the hosts:
+We want to demonstrate classification of packets into multiple packet flows based on source port. To do that, we need multiple :ned:`FlowMeasurementStarter` modules, each entering packets to different a flow. Conveniently, we can use the :ned:`MultiMeasurementLayer` module in the hosts:
 
 .. literalinclude:: ../omnetpp.ini
    :start-at: MultiMeasurementLayer
@@ -377,7 +383,7 @@ We want to demonstrate classification of packets into different packet flows. To
 Our goal is to enter UDP packets with source port 500 to flow X, and those with source port 1000 to flow Y. Thus, we need two measurement starter modules (and two measurement recorders in the servers):
 
 **TODO** do we need two recorders? yes. because there is classification in the server side as well. -> actually, do we need packet data filters in the servers?
-if not, one recorder might be enough
+if not, one recorder might be enough -> try, but no need for classification on the server side
 
 .. literalinclude:: ../omnetpp.ini
    :start-at: numMeasurementModules
@@ -400,9 +406,9 @@ Here is the flow definition in omnetpp.ini:
 
 We set up two flows (``BG`` and ``VID``) based on the source port of packets. The flows have multiple entry and exit points (in both clients and servers, respectively). Each measurement module in in MultiMeasurementLayer classifies packets to one of the flows, using the packet data filter. Just as in the previous configuration, we measure elapsed time and queueing time. Note that:
 
-- The recorders record both flows independently
-- Packets from multiple sources that belong to the same flow are recorded together
-- We don't need the measurement recorders in the clients, and the measurement starters in the servers, so we set them to the omitted type/disable them.
+- The recorders record flows independently
+- Packets from multiple sources that belong to the same flow are recorded in the same statistic
+- We don't need the measurement recorders in the clients, and the measurement starters in the servers, so we set them to the omitted type/disable them. -> nem kell mar az omitted...ha uresen hagyod akkor omitted lesz TRY
 
 .. **TODO** whats the difference between flownames = client1 or client2 and each recorder recording a different flow? -> seems like they are recorded to two statistics
 
@@ -412,6 +418,8 @@ We set up two flows (``BG`` and ``VID``) based on the source port of packets. Th
 
    - a flow can have multiple entry and exit points
    - at exit points, each flow is recorded to its own statistic
+
+**TODO** ? lehetne kulon a recording es az exit
 
 Results
 +++++++
@@ -462,6 +470,8 @@ Flows are defined per-bit of the packet, thus the flow tags are attached as regi
 
 In this case, there are three region tags attached to bytes 0-1000, and three more to bytes 1000-1042. (the ``ElapsedTimeTag`` and ``QueueingTimeTag`` contains the elapsed and queieing times, the ``FlowTag`` contains the flow name). The first three tags are added by the measurement module under the ``udp`` module in the hosts. The packet is just the data payload (1000B) at this point, without UDP, IP and Ethernet encapsulation (42B headers total). The last three region tags are added in switch1, when the packet already has those headers. Consequently, the second flow tag only contains the switch1 flow, because that part of the packet didn't exist when the client added its flowtag/at the client's measurement module.
 
+**TODO** a szoveg legyen jo, a kep rossz, es csak a kepet kell kicserelni
+
 .. **TODO** why 1000-1042? shouldnt it be on the front? github issue #716; note: most nem mukodik de a magyarazat helytallo
 
 .. note:: From the image above, it appears that the headers are added to the end of the packet, instead of the beginning. This is a bug yet to be fixed, but the above explanation is correct.
@@ -475,3 +485,5 @@ The ``ElapsedTime`` measurement measures the total time spent in the flow. The o
 
 The `PacketEvent` Measurement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+need c++ code to use it in a meaningful way
