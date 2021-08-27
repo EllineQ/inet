@@ -150,7 +150,7 @@ Adding Measurement Modules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The FlowMeasurementStarter and FlowMeasurementRecorder modules can be inserted anywhere in the network (inside network nodes or protocol modules, etc) in NED by editing the NED source of modules or extending them as a new type.
-However, some modules such as the LayeredEthernetInterface, have optional slots for a :ned:`MeasurementLayer` module. This module contains a FlowMeasurementStarter and a FlowMeasurementRecorder, and can be inserted from the .INI file (e.g. ``*.host.eth[0].measurementLayer.typename = "MeasurementLayer"``).
+However, some modules such as the LayeredEthernetInterface, have optional :ned:`MeasurementLayer` submodules. This module contains a FlowMeasurementStarter and a FlowMeasurementRecorder, and can be inserted from the .INI file (e.g. ``*.host.eth[0].measurementLayer.typename = "MeasurementLayer"``).
 
 .. figure:: media/Default_MeasurementLayer.png
    :align: center
@@ -172,7 +172,7 @@ one can use several measurement modules connected serially. The MultiMeasurement
 
 .. **TODO** it can be used in place of a MeasurementLayer module
 
-The example simulations demonstrate inserting measurement modules into both specific locations (into the :ned:`Udp` module) and optional :ned:`MeasurementLayer` slots.
+The example simulations demonstrate both inserting measurement modules into specific locations (below the :ned:`Udp` module) and using optional :ned:`MeasurementLayer` submodules already present in some modules.
 
 Limitations
 ~~~~~~~~~~~
@@ -199,12 +199,14 @@ The Example Simulations
 
 The showcase contains the following examples simulations:
 
-**TODO** Basic-Advanced / OptionalSlots...
+.. **TODO** Basic-Advanced / OptionalSlots...
 
-**TODO** ide fejezetcim
+.. **TODO** ide fejezetcim
 
-- ``Default``: Demonstrates creating packet flows by putting measurement modules into optional slots
-- ``AnyLocation``: Demonstrates the following: 
+.. /putting measurement modules as optional submodules
+
+- **Adding Measurement Modules as Optional Submodules** (``Basic`` config): Demonstrates creating packet flows by using optional measurement submodules in modules which contain them
+- **Putting Measurement Modules into Any Module** (``AnyLocation`` config): Demonstrates the following: 
   
   - Adding measurement modules to an arbitrary module
   - Putting packets from multiple sources into the same flow
@@ -230,8 +232,8 @@ It contains hosts connected by switches (:ned:`EthernetSwitch`) in a dumbbell to
 
 .. In both simulations, each client sends packets to the two servers. The simulations differ only in what packet flows and measurements are defined.
 
-Measurement Modules in Optional Slots
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Adding Measurement Modules as Optional Submodules
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Configuration
 +++++++++++++++++
@@ -336,8 +338,8 @@ Results
 
 **TODO** some charts? -> histograms! ha van valami ertelmes histogram
 
-Putting Measurement Modules Anywhere
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Putting Measurement Modules into Any Module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Configuration
 +++++++++++++++++
@@ -346,7 +348,7 @@ In this configuration, we want to create packet flows below the :ned:`Udp` modul
 
 **TODO** ossze fog mixelodni a 2 application (eddig az appban volt)
 
-As mentioned above, in this configuration, we want to add a measurement module to the network without using optional slots.
+As mentioned above, in this configuration, we want to add a measurement module to the network without using optional measurement submodules already present in some modules.
 To demonstrate that, we create packet flows below the :ned:`Udp` module in hosts. 
 
 The easiest way to insert a measurement module into any module (which doesn't already have an optional submodule) is to extend with a measurement module as a new type. For example, we extend :ned:`StandardHost` into ``MyStandardHost`` in FlowMeasurementShowcase.ned. We could create two versions, one with a :ned:`FlowMeasurementStarter` and one with a :ned:`FlowMeasurementRecorder`, but it is more convenient and more generic to add a :ned:`MeasurementLayer`, which contains both:
@@ -486,4 +488,4 @@ The ``ElapsedTime`` measurement measures the total time spent in the flow. The o
 The `PacketEvent` Measurement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-need c++ code to use it in a meaningful way
+**TODO** need c++ code to use it in a meaningful way
