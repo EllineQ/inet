@@ -20,20 +20,6 @@ import inet.networklayer.common.L3Address;
 
 namespace inet::sctp;
 
-message SCTPMessage extends cPacket
-{
-    @customize(true);
-    // Source Port
-    uint16 srcPort;
-    // Destination Port
-    uint16 destPort;
-    // Verification Tag
-    uint32 tag;
-    bool checksumOk;
-    abstract cPacket *chunks[];
-}
-
-
 message SCTPChunk extends cPacket
 {
     @customize(false);
@@ -84,7 +70,7 @@ message SCTPInitAckChunk extends SCTPChunk
     L3Address addresses[];
     char cookie[];
     uint8 unrecognizedParameters[];
-    cPacket *stateCookie = nullptr;
+    SCTPCookie *stateCookie = nullptr;
     uint32 msg_rwnd;
     uint8 random[]; //Random Number
     uint16 chunkTypes[];
@@ -220,17 +206,17 @@ message SCTPShutdownCompleteChunk extends SCTPChunk
     bool TBit = 0;
 }
 
+message SCTPParameter extends cPacket
+{
+    uint16 parameterType;
+}
+
 message SCTPErrorChunk extends SCTPChunk
 {
     @customize(true);
     bool TBit = 0;
     bool MBit = 0;
-    abstract cPacket *parameters[];
-}
-
-message SCTPParameter extends cPacket
-{
-    uint16 parameterType;
+    SCTPParameter *parameters[] @owned;
 }
 
 message SCTPPacketDropChunk extends SCTPChunk
@@ -247,7 +233,7 @@ message SCTPPacketDropChunk extends SCTPChunk
 message SCTPStreamResetChunk extends SCTPChunk
 {
     @customize(true);
-    abstract cPacket *parameters[];
+    SCTPParameter *parameters[] @owned;
 }
 
 message SCTPOutgoingSSNResetRequestParameter extends SCTPParameter
@@ -307,14 +293,14 @@ message SCTPAsconfChunk extends SCTPChunk
     uint32 serialNumber;
     L3Address addressParam;
     uint32 peerVTag; //for NAT
-    abstract cPacket *asconfParams[];
+    SCTPParameter *asconfParams[] @owned;
 }
 
 message SCTPAsconfAckChunk extends SCTPChunk
 {
     @customize(true);
     uint32 serialNumber;
-    abstract cPacket *asconfResponse[];
+    SCTPParameter *asconfResponse[] @owned;
 }
 
 message SCTPAddIPParameter extends SCTPParameter
@@ -366,3 +352,17 @@ message NatMessage extends cPacket
     L3Address     peer2Addresses[];
     uint32      portPeer2;
 }
+
+message SCTPMessage extends cPacket
+{
+    @customize(true);
+    // Source Port
+    uint16 srcPort;
+    // Destination Port
+    uint16 destPort;
+    // Verification Tag
+    uint32 tag;
+    bool checksumOk;
+    SCTPChunk *chunks[] @owned;
+}
+

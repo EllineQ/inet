@@ -45,7 +45,8 @@ class DYMOSequenceNumber
 // classes
 //
 
-class AddressBlock {
+class AddressBlock extends cObject
+{
     L3Address address;
     int prefixLength;
     bool hasValidityTime;

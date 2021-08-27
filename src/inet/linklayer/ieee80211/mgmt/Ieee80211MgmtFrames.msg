@@ -130,7 +130,7 @@ struct Ieee80211SupportedRatesElement
 //
 // Frame body base class used to hide various frame body types
 //
-class Ieee80211FrameBody
+class Ieee80211FrameBody extends cObject
 {
     short bodyLength; // not an actual frame field
 }

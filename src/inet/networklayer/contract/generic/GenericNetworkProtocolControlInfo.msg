@@ -42,7 +42,7 @@ class GenericNetworkProtocolControlInfo extends cObject //TODO rename!!!!
 // address (and it may be used on other multicast networks for similar
 // addressing purpose).
 //
-class GenericRoutingDecision
+class GenericRoutingDecision extends cObject
 {
     int interfaceId = -1; 
     L3Address nextHop;

@@ -43,7 +43,7 @@ struct BGPUpdateNLRI
 // Represents the list of path attributes in a BGPv4 UPDATE message.
 // See RFC 4271, section 4.3
 //
-class BGPUpdatePathAttributeList
+class BGPUpdatePathAttributeList extends cObject
 {
     BGPUpdatePathAttributesOrigin origin; // mandatory attribute
     BGPUpdatePathAttributesASPath asPath[]; // mandatory attribute

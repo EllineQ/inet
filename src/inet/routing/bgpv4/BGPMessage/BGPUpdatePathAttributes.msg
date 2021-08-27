@@ -46,7 +46,7 @@ struct BGPUpdateAttributeType
     unsigned char typeCode @enum(BGPUpdateAttributeTypeCode);
 }
 
-class BGPUpdatePathAttributes
+class BGPUpdatePathAttributes extends cObject
 {
     BGPUpdateAttributeType type; // 2 octets
     unsigned short length; // 2 octets
