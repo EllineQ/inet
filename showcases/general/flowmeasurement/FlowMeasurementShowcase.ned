@@ -26,7 +26,7 @@ import inet.protocolelement.measurement.IMeasurementLayer;
 module MyStandardHost extends StandardHost
 {
     submodules:
-        measurementLayer: <default("OmittedMeasurementLayer")> like IMeasurementLayer {
+        measurementLayer: <default("")> like IMeasurementLayer {
             @display("p=450,250");
         }
     connections:

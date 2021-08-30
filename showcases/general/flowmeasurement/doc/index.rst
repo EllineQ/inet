@@ -338,15 +338,19 @@ Results
 
 **TODO** some charts? -> histograms! ha van valami ertelmes histogram
 
+.. figure:: media/anylocation_server2_elapsedtime_histogram.png
+   :align: center
+
 Putting Measurement Modules into Any Module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Configuration
 +++++++++++++++++
 
-In this configuration, we want to create packet flows below the :ned:`Udp` module in hosts.
+In this configuration, we want to create packet flows below the :ned:`Udp` module in hosts. Compared to the previous configuration where each app had its own flow,
+here packets from the two application are mixed in the flows.
 
-**TODO** ossze fog mixelodni a 2 application (eddig az appban volt)
+.. **TODO** ossze fog mixelodni a 2 application (eddig az appban volt)
 
 As mentioned above, in this configuration, we want to add a measurement module to the network without using optional measurement submodules already present in some modules.
 To demonstrate that, we create packet flows below the :ned:`Udp` module in hosts. 
@@ -358,7 +362,7 @@ The easiest way to insert a measurement module into any module (which doesn't al
    :end-before: FlowMeasurementShowcase
    :language: ned
 
-To make ``MyStandardHost`` even more generic, we make the measurement layer module optional (:ned:`OmittedMeasurementLayer` by default). Note that we just added an optional measurement layer submodule. We can add a measurement layer module from the .INI file.
+To make ``MyStandardHost`` even more generic, we make the measurement layer module optional (empty string by default). Note that we just added an optional measurement layer submodule. We can add a measurement layer module from the .INI file.
 
 We insert the measurement layer module between the :ned:`Udp` module and the :ned:`MessageDispatcher` below it. The gates need to be reconnected to the new module (as per the connection section in the NED code above).
 Here is the result:
@@ -382,15 +386,19 @@ We want to demonstrate classification of packets into multiple packet flows base
    :end-at: server
    :language: ini
 
-Our goal is to enter UDP packets with source port 500 to flow X, and those with source port 1000 to flow Y. Thus, we need two measurement starter modules (and two measurement recorders in the servers):
+Our goal is to enter UDP packets with source port 500 to flow ``VID``, and those with source port 1000 to flow ``BG``. Thus, we need two measurement starter modules:
 
-**TODO** do we need two recorders? yes. because there is classification in the server side as well. -> actually, do we need packet data filters in the servers?
-if not, one recorder might be enough -> try, but no need for classification on the server side
+.. **TODO** do we need two recorders? yes. because there is classification in the server side as well. -> actually, do we need packet data filters in the servers?
+   if not, one recorder might be enough -> try, but no need for classification on the server side
 
 .. literalinclude:: ../omnetpp.ini
    :start-at: numMeasurementModules
-   :end-at: server
+   :end-at: numMeasurementModules
    :language: ini
+
+.. note:: One measurement recorder module is enough in the servers, because it doesn't need to classify packets (already classified), it just needs to record both flows.
+
+.. note:: One measurement recorder module is enough in the servers, as it can record both flows.
 
 Here is the flow definition in omnetpp.ini:
 
@@ -410,7 +418,9 @@ We set up two flows (``BG`` and ``VID``) based on the source port of packets. Th
 
 - The recorders record flows independently
 - Packets from multiple sources that belong to the same flow are recorded in the same statistic
-- We don't need the measurement recorders in the clients, and the measurement starters in the servers, so we set them to the omitted type/disable them. -> nem kell mar az omitted...ha uresen hagyod akkor omitted lesz TRY
+- We don't need the measurement recorders in the clients, and the measurement starters in the servers, so we disable them.
+
+..  -> nem kell mar az omitted...ha uresen hagyod akkor omitted lesz TRY
 
 .. **TODO** whats the difference between flownames = client1 or client2 and each recorder recording a different flow? -> seems like they are recorded to two statistics
 
@@ -470,15 +480,15 @@ Flows are defined per-bit of the packet, thus the flow tags are attached as regi
 
    Figure X. Region tags attached to the packet
 
-In this case, there are three region tags attached to bytes 0-1000, and three more to bytes 1000-1042. (the ``ElapsedTimeTag`` and ``QueueingTimeTag`` contains the elapsed and queieing times, the ``FlowTag`` contains the flow name). The first three tags are added by the measurement module under the ``udp`` module in the hosts. The packet is just the data payload (1000B) at this point, without UDP, IP and Ethernet encapsulation (42B headers total). The last three region tags are added in switch1, when the packet already has those headers. Consequently, the second flow tag only contains the switch1 flow, because that part of the packet didn't exist when the client added its flowtag/at the client's measurement module.
+In this case, there are three region tags attached to bytes 42-1042, and three more to bytes 0-42. (the ``ElapsedTimeTag`` and ``QueueingTimeTag`` contains the elapsed and queieing times, the ``FlowTag`` contains the flow name). The first three tags are added by the measurement module under the ``udp`` module in the hosts. The packet is just the data payload (1000B) at this point, without UDP, IP and Ethernet encapsulation (42B headers total). The last three region tags are added in switch1, when the packet already has those headers. Consequently, the second flow tag only contains the switch1 flow, because that part of the packet didn't exist when the client added its flowtag/at the client's measurement module.
 
-**TODO** a szoveg legyen jo, a kep rossz, es csak a kepet kell kicserelni
+.. **TODO** a szoveg legyen jo, a kep rossz, es csak a kepet kell kicserelni
 
 .. **TODO** why 1000-1042? shouldnt it be on the front? github issue #716; note: most nem mukodik de a magyarazat helytallo
 
 .. note:: From the image above, it appears that the headers are added to the end of the packet, instead of the beginning. This is a bug yet to be fixed, but the above explanation is correct.
 
-.. **TODO** replace image when github issue #716 is fixed
+**TODO** replace image when github issue #716 is fixed
 
 Components of the `ElapsedTime`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
