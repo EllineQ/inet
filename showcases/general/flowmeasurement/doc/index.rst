@@ -6,14 +6,14 @@ Measuring Time Along Packet Flows
 Goals
 -----
 
-This showcase demonstrates measuring time associated with a packet as it travels/when it's present in a network, such as total elapsed time, time spent in queues, or transmission time. 
+This showcase demonstrates measuring time associated with a packet as it travels in a network, such as total elapsed time, time spent in queues, or transmission time. 
 
-This showcase demonstrates timing measurments along packet flows, i.e. paths various packets take in the network.
+This showcase demonstrates timing measurements along packet flows, i.e. paths various packets take in the network./between and entry and exit points
 
 The Model
 ---------
 
-The following sections contain an overview of packet flows. For more information, refer to the **TODO** section of the INET manual.
+The following sections contain an overview of packet flows. For more information, refer to the :doc:`Collecting Results </users-guide/ch-collecting-results>` section of the INET manual.
 
 Overview of Packet Flows
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -31,7 +31,24 @@ Overview of Packet Flows
 
 .. For example, a TCP module communicating with multiple other TCP modules can't distinguish between the packets based on the path they took.
 
-By default, statistics in INET are collected by modules, only based on data the modules can access. Sometimes this might not be sufficient. For example, measuring time separately for packets that arrived at the same destination but took different paths in the network.
+By default, statistics in INET are collected by modules, only based on data the modules can access. Sometimes this might not be sufficient. For example, measuring queueing time separately for packets that arrived at the same destination but took different paths in the network.
+
+**TODO**
+
+-------------
+
+- a normal statisztika esemenyek ami a moduleban vagy a submodulejaiban tortenik
+nem az adathozzaferes a lenyeg a tobbi is ki tud nyulni
+
+-> az esemenyek lokalitasa! a modul csak lokalis esemenyekrol tud statisztikakat gyujteni
+pl packet drop, valami dontes...de helyi esemeny
+
+de van olyan statisztika ami nem egy helyben, hanem egy csomaghoz torteno statisztika!
+
+normal stat: modulhoz kotheto esemenyek
+flow stat:   csomaghoz kotheto esemenyek statisztikai
+
+-------------
 
 .. For example, a TCP sink module communicating with multiple other TCP modules can't distinguish between the packets based on the path they took.
 
@@ -39,12 +56,34 @@ By default, statistics in INET are collected by modules, only based on data the 
 
 .. - nem derul ki h egy csomag milyen utvonalon kozlekedett; timing measurements for different paths - kulon statisztikailag merni a kulonbozo utvonalakat
 
+**TODO** nem csak timing lehet; egyes packetekhez kotheto adatok...
+
+-------------
+
 For timing measurements that require access to data of multiple modules, `packet flows` can be defined. A packet flow is a logical classification of packets, identified by its name, in the whole network and over the whole duration of the simulation. Flows are defined per-bit, i.e. each bit of the packet is kept track of in regard to which flow it belongs to (as continuous regions of the packet). Flows are defined by active modules which create entry and exit points of the flow in the network. The following are some more properties of packet flows:
 
-- A packet can be part of any number of flows
-- A packet can enter and exit a flow multiple times
-- Flows can overlap in time and in network topology
-- Flows can have multiple entry and exit points
+**TODO** pl ha szetvagodik akkor korrektul kezelodik mert bit szinten vannak tarolva az adatok; az alapegyseg a csomag amit merunk! nem a kulonbozo biteket...
+
+bar packet szinten vannak hozzarendelve, de a tarolasuk perbit tortenik. lasd kesobb... -> per bit tarolodik, de nincs implementalva
+
+lehet hogy nem is ide kene a per-bit -> ez implementation detail ami nincs kifejtve
+
+-------------
+
+- A packet can be part of any number of flows -> any number of flowtags/labels could be added
+- A packet can enter and exit various flows multiple times as it travels in the network -> nem biztos hogy erdemes ezt kiemelni 
+- Flows can overlap in time and in network topology -> ez kovetkezik a cimkebol -> nem kell
+- Flows can have multiple entry and exit points -> ugyanazt a cimket tobb helyen is letrehozhatom es merhetem a networkben
+
+-------------
+
+**TODO** itt fontos lenne egy jo mentalis model
+
+- ha ugyanaz a neve akkor ahhoz az identitashoz tartozik -> ez adja az identitasat
+- flow cimke; az identitast a neve adja; ahoz tartozik egy adatcsomag
+- ha tobb helyen ugyanaz a flow...a felhasznalo felelossege hogy jol allitsa be a merendo dolgokat -> silently nem mer semmit -> implementation detail
+
+-------------
 
 .. so
 
@@ -90,7 +129,7 @@ For timing measurements that require access to data of multiple modules, `packet
   - for example, we specify queueing time to be measured. The queues along the packet's route add the measured queueing time to the packet's metadata
   - packets exit the flow at modules acting as exit points. The measurements are recorded there as statistics.(as that module's statistics)(containing the total queueing time incurred by the packet
 
-Certain packets are classified to be entering the flow by FlowMeasurementStarter modules, for example by matching a filter. The modules add a FlowTag that describes the kind of measurements requested by the user. Based on the FlowTag, the measurements are added to the packet as metadata by certain modules as it travels in the network.
+Certain packets are classified **TODO** nem classification itt! -> label! to be entering the flow by FlowMeasurementStarter modules, for example by matching a filter. The modules add a FlowTag that describes the kind of measurements requested by the user. Based on the FlowTag, the measurements are added to the packet as metadata by certain modules as it travels in the network.
 
 For example, we specify queueing time to be measured. The queues along the packet's route add the measured queueing time to the packet's metadata.
 Packets exit the flow at FlowMeasurementRecorder modules. The measurements are recorded there as the FlowMeasurementRecorder module's statistics, containing the total queueing time incurred by the packet.
@@ -122,6 +161,8 @@ The FlowMeasurementStarter and FlowMeasurementRecorder modules have the same set
 
 By default, the filters match all packets (``*``). The :par:`measure` parameter can be one or the combination  of the following:
 
+**TODO** the measure parameter is a list containinig the from following set, separated by spaces.
+
 .. - The total elapsed time for the packet being in the flow: ``elapsedTime``
    - Time for the different cases: ``delayingTime``, ``queueingTime``, ``processingTime``, ``transmissionTime``, ``propagationTime``
    - Record all events that happen to the packet (more details below): ``packetEvent``
@@ -140,7 +181,9 @@ The ``packetEvent`` measurement is special, in the sense that it doesn't record 
 
 .. **TODO** the measurements do they need to be the same for the entry and exit modules? whats do they mean for each of them? for example, in entry module, specify measurements to attach to packet; in exit module, specify which measurements to record?
 
-.. note:: Although both the entry and exit module has a :par:`measure` parameter, its meaning is slightly different for the two modules. For the entry module, the parameter specifies which measurement data to include in the attached flow tag. For the exit module, it specifies which measurements to record as statistics. Generally, the parameter values should be the same for both modules.
+.. note:: Although both the entry and exit module has a :par:`measure` parameter, its meaning is slightly different for the two modules. For the entry module, the parameter specifies which measurement data to include in the attached flow tag. For the exit module, it specifies which measurements to record as statistics. Generally, the parameter values should be the same for both modules. **TODO** it should be the same or the subset of
+
+**TODO** miert jo ez; kesobb lesz rola szo; ha a summary-knal reszeletesebb analysist akarunk akkor ezzel a packet history-jat fel tudjuk hasznalni erre; a historybol barmit kiszedhetunk utolag.
 
 .. The FlowMeasurementStarter and FlowMeasurementRecorder modules can be placed in the packets' path anywhere in the network. However, certain modules, such as interfaces, have optional :ned:`MeasurementLayer` submodules. The :ned:`MeasurementLayer` module contains both measurment modules, and can be places easily in the network.
 
@@ -159,6 +202,8 @@ However, some modules such as the LayeredEthernetInterface, have optional :ned:`
 
 Classifying Packets Using Composition of Measurement Modules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO** nem classify! hanem tobb szempont szerint; ha tobb felteteled van akkor egymas utan kell kotni; ha tobb flowba akarsz beosztani (nem classify mert ugyanaz a packet belekerulhet tobb flowba is)
 
 A measurement module can enter packets that match its filter to a certain flow. However, for classifying packets to multiple flows based on multiple criteria,
 one can use several measurement modules connected serially. The MultiMeasurementLayer module makes this more convenient. It can be used in place of a MeasurementLayer module. It contains a variable number of MeasurementStarter and FlowMeasurementMaker modules; the number of modules is specified with its :par:`numMeasurementModules` parameter. For example, ``numMeasurementModules = 2``:
