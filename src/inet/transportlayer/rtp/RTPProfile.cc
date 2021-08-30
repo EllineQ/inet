@@ -158,7 +158,7 @@ void RTPProfile::createSenderModule(RTPInnerPacket *rinp)
 
     cModuleType *moduleType = cModuleType::find(moduleTypeName.c_str());
     if (moduleType == nullptr)
-        throw cRuntimeError("RTPProfile: payload sender module '%s' not found", moduleName.c_str());
+        throw cRuntimeError("RTPProfile: payload sender module '%s' not found", moduleTypeName.c_str());
 
     RTPPayloadSender *rtpPayloadSender = check_and_cast<RTPPayloadSender *>(moduleType->create(moduleName.c_str(), this));
     rtpPayloadSender->finalizeParameters();
